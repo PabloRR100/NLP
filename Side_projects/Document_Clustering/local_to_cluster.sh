@@ -50,7 +50,7 @@ docker run --rm -dit \
     --name ${CONTAINER_NAME} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
     -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
-    # -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
+    -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
     ${DOCKER_IMAGE} 
     
     jupyter contrib nbextension install --user # Rebuild image
