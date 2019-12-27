@@ -34,17 +34,11 @@ ssh -i $KEY_PATH \
 export DOCKER_PORT=8889
 export CLUSTER_PORT=18889
 
-export P21=8899
-export P22=18899
-export P31=8999
-export P32=18999
-export P41=9999
-export P42=19999
-
 export DOCKER_IMAGE=pablorr10/nlp:minimal
 export CONTAINER_NAME=nlpminimal
 
-export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
+# export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
+export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
 export CONTAINER_ROOT=/app
 
 export CLUSTER_DATA=/datadrive/madrid
@@ -55,11 +49,8 @@ docker stop ${CONTAINER_NAME} || true
 docker run --rm -dit \
     --name ${CONTAINER_NAME} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
-    -p ${P21}:${P22} \
-    -p ${P31}:${P32} \
-    -p ${P41}:${P42} \
     -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
-    -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
+    # -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
     ${DOCKER_IMAGE} 
     
     jupyter contrib nbextension install --user # Rebuild image
