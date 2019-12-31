@@ -3,7 +3,7 @@ paths:
     catalog: data/catalog
     checkpoints: checkpoints/
     stopwords: data/stopwords/
-    data: data/knowledge_dashboard
+    data: data/
 
 topic: isocyanate
 classes: [relevant, irrelevant]
