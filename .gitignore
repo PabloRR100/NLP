@@ -4,4 +4,4 @@
 .idea
 *.pyc
 .vscode
-**/data/
+**/globaldata/
