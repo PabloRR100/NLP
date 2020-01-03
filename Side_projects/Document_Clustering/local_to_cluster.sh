@@ -31,14 +31,14 @@ ssh -i $KEY_PATH \
 # Using Docker in Host
 # ---------------------
 
-export DOCKER_PORT=8889
-export CLUSTER_PORT=18889
+export DOCKER_PORT=8999
+export CLUSTER_PORT=18999
 
 export DOCKER_IMAGE=pablorr10/nlp:minimal
 export CONTAINER_NAME=nlpminimal
 
-# export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
-export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
+export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
+# export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
 export CONTAINER_ROOT=/app
 
 export CLUSTER_DATA=/datadrive/madrid
@@ -48,6 +48,7 @@ export CONTAINER_DATA=${CONTAINER_ROOT}/globaldata
 docker stop ${CONTAINER_NAME} || true
 docker run --rm -dit \
     --name ${CONTAINER_NAME} \
+    -e SERVING_PORT=${DOCKER_PORT} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
     -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
     -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
