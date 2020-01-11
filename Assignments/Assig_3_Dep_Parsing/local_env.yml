@@ -1,0 +1,7 @@
+name: A3
+channels:
+  - defaults
+dependencies:
+  - python=3.6
+  - numpy=1.16.4
+  - tqdm=4.19.9
