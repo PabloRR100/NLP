@@ -3,6 +3,7 @@ import os
 import sys
 import glob
 import flask
+import base64
 import pickle
 import pandas as pd
 from os.path import join as JP
@@ -27,8 +28,8 @@ from scripts.algorithms.clustering import plot_centroids_as_wordclouds
 config = parse_yaml('config.yaml')
 paths = config['paths']
 image_directory = paths['images']
-list_of_images = [os.path.basename(x) for x in glob.glob('{}*.png'.format(image_directory))]
-print('Found {} images'.format(len(list_of_images)))
+# list_of_images = [os.path.basename(x) for x in glob.glob('{}*.png'.format(image_directory))]
+# print('Found {} images'.format(len(list_of_images)))
 
 ''' ---------------------------------- HP ---------------------------------- '''
 
@@ -86,8 +87,10 @@ app.layout = html.Div([
         dcc.Graph(id='umap')
     ]),
 
-    # # Wordcloud
-    # html.Img(id='wordclouds')
+    # Wordcloud
+    html.Div([
+        html.Img(id='wordclouds', src='')
+    ]),
     
 ])
 
@@ -95,45 +98,21 @@ app.layout = html.Div([
     Output('umap','figure'), 
     [Input('num_cluster_dropwdown', 'value')])
 def update_umap(num_clusters):
-    
     d = embeddings_df[embeddings_df['num_clusters'] == num_clusters]    
-    # trace = [go.Scatter3d(
-    #     x = embeddings_df['d1'], y = embeddings_df['d2'], z = embeddings_df['d3'],
-    #     mode = 'markers', marker = {'size': 3 , 'color': embeddings_df['cluster']}
-    # )]
-
-    # layout = go.Layout(
-    #     title='Clustering of documents',
-    #     hovermode = 'closest')
-
-    # fig = go.Figure({'data':trace, 'layout': layout})
-
     fig = px.scatter_3d(d, x='d1', y='d2', z='d3', color='cluster')
     fig.update_traces(marker=dict(size=3))
     fig.update_layout(height=700)
     return fig 
 
-# @app.callback(
-#     Output('wordclouds','src'),
-#     [Input('num_cluster_dropwdown', 'value')])
-# def update_image_src(value):
-#     print('New src = ', )
-#     return static_image_route + value
+@app.callback(
+    Output('wordclouds','src'),
+    [Input('num_cluster_dropwdown', 'value')])
+def update_image_src(num_clusters):
+    uri = JP(image_directory, images_basename + '_{}.png'.format(num_clusters))
+    uri_base64 = base64.b64encode(open(uri, 'rb').read()).decode('ascii')
+    uri_base64 = 'data:image/png;base64,{}'.format(uri_base64)
+    return uri_base64
 
-# @app.server.route('{}<image_path>.png'.format(static_image_route))
-# def serve_image(image_path):
-#     image_name = '{}.png'.format(image_path)
-#     print(image_name)
-#     if image_name not in list_of_images:
-#         raise Exception('"{}" is excluded from the allowed static files'.format(image_path))
-#     return flask.send_from_directory(image_directory, image_name)
-
-# def update_wordclouds(num_clusters):
-#     plotly_fig = mpl_to_plotly(
-#         plot_centroids_as_wordclouds(
-#             words[num_clusters], n_cols=3, show=False))
-#     print('Hi there!')
-#     return plotly_fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
