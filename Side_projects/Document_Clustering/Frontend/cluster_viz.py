@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 import plotly.figure_factory as ff
 import dash_core_components as dcc
 import dash_html_components as html
+from plotly.tools import mpl_to_plotly
 from dash.dependencies import Input, Output
 
 os.chdir('/app/')
@@ -19,6 +20,7 @@ sys.path.append(JP(os.getcwd(),'utils'))
 sys.path.append(JP(os.getcwd(),'scripts'))
 
 from utils.general import parse_yaml, ensure_directories
+from scripts.algorithms.clustering import plot_centroids_as_wordclouds
 config = parse_yaml('config.yaml')
 paths = config['paths']
 
@@ -68,21 +70,20 @@ app.layout = html.Div([
 
     html.Div([
         dcc.Graph(id='umap')
+    ]),
+
+    html.Div([
+        dcc.Graph(id='wordclouds')
     ])
     
 ])
 
 @app.callback(
-    dash.dependencies.Output('umap','figure'),
-    [dash.dependencies.Input('num_cluster_dropwdown', 'value')]
-)
+    Output('umap','figure'), 
+    [Input('num_cluster_dropwdown', 'value')])
 def update_umap(num_clusters):
     
-    d = embedding_df[embedding_df['num_clusters'] == num_clusters]
-    print(d.shape)
-    print(d.cluster.unique())
-    print(d.shape)
-    
+    d = embedding_df[embedding_df['num_clusters'] == num_clusters]    
     # trace = [go.Scatter3d(
     #     x = embedding_df['d1'], y = embedding_df['d2'], z = embedding_df['d3'],
     #     mode = 'markers', marker = {'size': 3 , 'color': embedding_df['cluster']}
@@ -99,8 +100,20 @@ def update_umap(num_clusters):
     fig.update_layout(height=700)
     return fig 
 
-
+@app.callback(
+    Output('wordclouds','figure'),
+    [Input('num_cluster_dropwdown', 'value')])
 def update_wordclouds(num_clusters):
+    d = words_df[words_df['num_clusters'] == num_clusters]    
+    print(words_df.columns)
+    print(words_df.shape)
+    print(num_clusters)
+    print(words_df[words_df['num_clusters' == num_clusters]].shape)
+    return mpl_to_plotly(
+        plot_centroids_as_wordclouds(
+            words_df[words_df['num_clusters' == num_clusters]], 
+            n_cols=3))
+
 
 
 if __name__ == '__main__':
