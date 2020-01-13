@@ -28,7 +28,7 @@ config = parse_yaml('config.yaml')
 paths = config['paths']
 image_directory = paths['images']
 list_of_images = [os.path.basename(x) for x in glob.glob('{}*.png'.format(image_directory))]
-print(len(list_of_images))
+print('Found {} images'.format(len(list_of_images)))
 
 ''' ---------------------------------- HP ---------------------------------- '''
 
@@ -86,8 +86,8 @@ app.layout = html.Div([
         dcc.Graph(id='umap')
     ]),
 
-    # Wordcloud
-    html.Img(id='wordclouds')
+    # # Wordcloud
+    # html.Img(id='wordclouds')
     
 ])
 
@@ -113,18 +113,20 @@ def update_umap(num_clusters):
     fig.update_layout(height=700)
     return fig 
 
-@app.callback(
-    Output('wordclouds','src'),
-    [Input('num_cluster_dropwdown', 'value')])
-def update_image_src(value):
-    return static_image_route + value
+# @app.callback(
+#     Output('wordclouds','src'),
+#     [Input('num_cluster_dropwdown', 'value')])
+# def update_image_src(value):
+#     print('New src = ', )
+#     return static_image_route + value
 
-@app.server.route('{}<image_path>.png'.format(static_image_route))
-def serve_image(image_path):
-    image_name = '{}.png'.format(image_path)
-    if image_name not in list_of_images:
-        raise Exception('"{}" is excluded from the allowed static files'.format(image_path))
-    return flask.send_from_directory(image_directory, image_name)
+# @app.server.route('{}<image_path>.png'.format(static_image_route))
+# def serve_image(image_path):
+#     image_name = '{}.png'.format(image_path)
+#     print(image_name)
+#     if image_name not in list_of_images:
+#         raise Exception('"{}" is excluded from the allowed static files'.format(image_path))
+#     return flask.send_from_directory(image_directory, image_name)
 
 # def update_wordclouds(num_clusters):
 #     plotly_fig = mpl_to_plotly(
@@ -132,8 +134,6 @@ def serve_image(image_path):
 #             words[num_clusters], n_cols=3, show=False))
 #     print('Hi there!')
 #     return plotly_fig
-
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
