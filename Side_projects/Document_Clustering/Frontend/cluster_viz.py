@@ -1,6 +1,9 @@
 
 import os
 import sys
+import glob
+import flask
+import pickle
 import pandas as pd
 from os.path import join as JP
 
@@ -23,7 +26,9 @@ from utils.general import parse_yaml, ensure_directories
 from scripts.algorithms.clustering import plot_centroids_as_wordclouds
 config = parse_yaml('config.yaml')
 paths = config['paths']
-
+image_directory = paths['images']
+list_of_images = [os.path.basename(x) for x in glob.glob('{}*.png'.format(image_directory))]
+print(len(list_of_images))
 
 ''' ---------------------------------- HP ---------------------------------- '''
 
@@ -33,18 +38,27 @@ MAX_K = 10
 
 ''' ---------------------------------- DATA ---------------------------------- '''
 
+images_basename = 'wordcloud_clusters'
+
 words_df = pd.read_csv(
     JP(paths['results'], 'words_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
 
-embedding_df = pd.read_csv(
+embeddings_df = pd.read_csv(
     JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
 
-# embedding_df['num_clusters'] = embedding_df['num_clusters'].apply(lambda x: str(x))
+with open(JP(paths['results'], 'words_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
+    words = pickle.load(f)
+
+with open(JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
+    embeddings = pickle.load(f)
+
+# embeddings_df['num_clusters'] = embeddings_df['num_clusters'].apply(lambda x: str(x))
 
 ''' ---------------------------------- APPLICATION ---------------------------------- '''
 
 app = dash.Dash()
 server = app.server
+static_image_route = '/static/'
 
 app.layout = html.Div([
 
@@ -64,17 +78,16 @@ app.layout = html.Div([
         html.H3('How many clusters would you like?'),
         dcc.Dropdown(
             id='num_cluster_dropwdown',
-            options=[{'label': i, 'value': i} for i in embedding_df['num_clusters'].unique()],
-            value=embedding_df['num_clusters'].unique()[0])
+            options=[{'label': i, 'value': i} for i in embeddings_df['num_clusters'].unique()],
+            value=embeddings_df['num_clusters'].unique()[0])
     ], style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "33%"}),
 
     html.Div([
         dcc.Graph(id='umap')
     ]),
 
-    html.Div([
-        dcc.Graph(id='wordclouds')
-    ])
+    # Wordcloud
+    html.Img(id='wordclouds')
     
 ])
 
@@ -83,10 +96,10 @@ app.layout = html.Div([
     [Input('num_cluster_dropwdown', 'value')])
 def update_umap(num_clusters):
     
-    d = embedding_df[embedding_df['num_clusters'] == num_clusters]    
+    d = embeddings_df[embeddings_df['num_clusters'] == num_clusters]    
     # trace = [go.Scatter3d(
-    #     x = embedding_df['d1'], y = embedding_df['d2'], z = embedding_df['d3'],
-    #     mode = 'markers', marker = {'size': 3 , 'color': embedding_df['cluster']}
+    #     x = embeddings_df['d1'], y = embeddings_df['d2'], z = embeddings_df['d3'],
+    #     mode = 'markers', marker = {'size': 3 , 'color': embeddings_df['cluster']}
     # )]
 
     # layout = go.Layout(
@@ -101,18 +114,24 @@ def update_umap(num_clusters):
     return fig 
 
 @app.callback(
-    Output('wordclouds','figure'),
+    Output('wordclouds','src'),
     [Input('num_cluster_dropwdown', 'value')])
-def update_wordclouds(num_clusters):
-    d = words_df[words_df['num_clusters'] == num_clusters]    
-    print(words_df.columns)
-    print(words_df.shape)
-    print(num_clusters)
-    print(words_df[words_df['num_clusters' == num_clusters]].shape)
-    return mpl_to_plotly(
-        plot_centroids_as_wordclouds(
-            words_df[words_df['num_clusters' == num_clusters]], 
-            n_cols=3))
+def update_image_src(value):
+    return static_image_route + value
+
+@app.server.route('{}<image_path>.png'.format(static_image_route))
+def serve_image(image_path):
+    image_name = '{}.png'.format(image_path)
+    if image_name not in list_of_images:
+        raise Exception('"{}" is excluded from the allowed static files'.format(image_path))
+    return flask.send_from_directory(image_directory, image_name)
+
+# def update_wordclouds(num_clusters):
+#     plotly_fig = mpl_to_plotly(
+#         plot_centroids_as_wordclouds(
+#             words[num_clusters], n_cols=3, show=False))
+#     print('Hi there!')
+#     return plotly_fig
 
 
 

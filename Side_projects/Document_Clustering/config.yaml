@@ -4,6 +4,7 @@ paths:
     checkpoints: checkpoints/
     stopwords: data/stopwords/
     data: data/
+    images: images/
 
 topic: isocyanate
 classes: [relevant, irrelevant]

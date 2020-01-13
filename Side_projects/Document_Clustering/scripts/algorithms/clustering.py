@@ -161,13 +161,13 @@ def plot_centroids_as_wordclouds(
     word_scores,
     NUM_CLUSTERS = None,
     max_words_per_cloud=100, 
-    use_mask=False, n_cols=2, figsize=(15,15)):
+    use_mask=False, n_cols=2, figsize=(15,15), show=True):
     ''' Convert a centroid representation to its correspondent wordcloud '''
     if not NUM_CLUSTERS:
         NUM_CLUSTERS = word_scores.cluster.nunique()
 
     n_plots = NUM_CLUSTERS
-    _, axs = define_subplots(n_cols,n_plots, figsize)
+    fig, axs = define_subplots(n_cols,n_plots, figsize)
     
     for c in range(NUM_CLUSTERS):
         wordcloud = cluster_to_wordcloud(
@@ -183,7 +183,10 @@ def plot_centroids_as_wordclouds(
             axs[c // n_cols, c % n_cols].imshow(wordcloud)
             axs[c // n_cols, c % n_cols].axis('off')
     plt.tight_layout()
-    plt.show()
+    if not show:
+        return fig
+    else:
+        plt.show()
     return
 
 
