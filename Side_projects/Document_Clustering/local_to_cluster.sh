@@ -37,8 +37,8 @@ export CLUSTER_PORT=18999
 export DOCKER_IMAGE=pablorr10/nlp:minimal
 export CONTAINER_NAME=nlpminimal
 
-export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
-# export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
+# export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
+export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
 export CONTAINER_ROOT=/app
 
 export CLUSTER_DATA=/datadrive/madrid
@@ -51,8 +51,8 @@ docker run --rm -dit \
     -e SERVING_PORT=${DOCKER_PORT} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
     -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
-    -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
     ${DOCKER_IMAGE} 
+    # -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
     
     jupyter contrib nbextension install --user # Rebuild image
 
