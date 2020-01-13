@@ -129,8 +129,23 @@ def mask_(url="https://image.shutterstock.com/image-illustration/flask-word-clou
         Image.open(
             requests.get(url,stream=True).raw))
 
+def define_subplots(n_cols,n_plots,figsize=None):
+    '''Return the axes given a total 
+    of plots and desired number of columns'''
+    j = 1 if n_plots%n_cols != 0 else 0
+    n_rows = (n_plots // n_cols) + j 
+    
+    if not figsize: 
+        figsize=(n_cols*5,n_rows*5)
+    
+    fig, axs = plt.subplots(
+        nrows=n_rows, ncols=n_cols, sharex=False, sharey=False,
+        figsize=figsize)
+    
+    return fig,axs
+
 def cluster_to_wordcloud(
-    df, method='idf', max_words=100, use_mask=False):
+    df, max_words=200, use_mask=False, bgcolor='black'):
     ''' Convert 1 cluster into a WordCloud given:
         - The TFIDF for the cluster
         - The Score Method that give imporance to the word '''
@@ -138,32 +153,35 @@ def cluster_to_wordcloud(
     wordcloud = WordCloud(
         max_words=max_words, 
         mask=mask_ if use_mask else None,
-        background_color="white").generate_from_frequencies(
-            frequencies=dict(zip(df.word, df[method])))
+        background_color=bgcolor).generate_from_frequencies(
+            frequencies=dict(zip(df.word, df.score)))
     return wordcloud
 
-
 def plot_centroids_as_wordclouds(
-    model,
-    clusters:KMeans,
-    method:str='centroid_score',
-    max_words_per_cloud=100, use_mask=False, n_cols=2):
+    word_scores,
+    NUM_CLUSTERS = None,
+    max_words_per_cloud=100, 
+    use_mask=False, n_cols=2, figsize=(15,15)):
+    ''' Convert a centroid representation to its correspondent wordcloud '''
+    if not NUM_CLUSTERS:
+        NUM_CLUSTERS = word_scores.cluster.nunique()
 
-    n_rows = len(clusters.cluster_centers_)//n_cols
-    _, axs = plt.subplots(nrows=n_rows, ncols=n_cols,figsize=(n_cols*5,n_rows*5))
+    n_plots = NUM_CLUSTERS
+    _, axs = define_subplots(n_cols,n_plots, figsize)
     
-    for c in range(len(clusters.cluster_centers_)):
-        doc = filter_cluster(model,clusters,c)
-        cluster_word_scores = compute_word_importance_for_centroid(doc, max_words_per_cloud)
+    for c in range(NUM_CLUSTERS):
         wordcloud = cluster_to_wordcloud(
-            df=cluster_word_scores,
-            method=method,
+            df=word_scores[word_scores.cluster == c],
             max_words=max_words_per_cloud,
             use_mask=use_mask)
         
         # Plot the resulting wordcloud
-        axs[c // n_cols, c % n_cols].imshow(wordcloud)
-        axs[c // n_cols, c % n_cols].axis('off')
+        if len(axs.shape) == 1:
+            axs[c].imshow(wordcloud)
+            axs[c].axis('off')            
+        else:
+            axs[c // n_cols, c % n_cols].imshow(wordcloud)
+            axs[c // n_cols, c % n_cols].axis('off')
     plt.tight_layout()
     plt.show()
     return
