@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import math
 import os
+import math
 import time
 from datetime import datetime
 
 import torch
-from parser_model import ParserModel
-from torch import nn, optim
 from tqdm import tqdm
+from torch import nn, optim
+from parser_model import ParserModel
 from utils.parser_utils import minibatches, load_and_preprocess_data, AverageMeter
 
 
