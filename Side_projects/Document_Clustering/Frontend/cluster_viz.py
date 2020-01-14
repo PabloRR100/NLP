@@ -1,8 +1,6 @@
 
 import os
 import sys
-import glob
-import flask
 import base64
 import pickle
 import pandas as pd
@@ -28,8 +26,7 @@ from scripts.algorithms.clustering import plot_centroids_as_wordclouds
 config = parse_yaml('config.yaml')
 paths = config['paths']
 image_directory = paths['images']
-# list_of_images = [os.path.basename(x) for x in glob.glob('{}*.png'.format(image_directory))]
-# print('Found {} images'.format(len(list_of_images)))
+
 
 ''' ---------------------------------- HP ---------------------------------- '''
 
