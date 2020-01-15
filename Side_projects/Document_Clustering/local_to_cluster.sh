@@ -52,8 +52,8 @@ docker run --rm -dit \
     --name ${CONTAINER_NAME} \
     -e SERVING_PORT=${DOCKER_PORT} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
-    -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
     -p ${CLUSTER_PORT_2}:${DOCKER_PORT_2} \
+    -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
     ${DOCKER_IMAGE} 
     # -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
     
@@ -71,4 +71,21 @@ scp -i ${KEY_PATH} \
     -r ${SSH_USER}@${SSH_HOST}:${REMOTE_DIR} ${LOCAL_DIR}
 
 
+# On my mac
 
+export DOCKER_IMAGE=pablorr10/nlp:minimal
+export CONTAINER_NAME=nlpdash
+export CONTAINER_ROOT=/app
+
+docker run --rm -dit \
+    --name ${CONTAINER_NAME} \
+    -e SERVING_PORT=8899 \
+    -p 8899:8899 \
+    -p 8050:8050 \
+    -v ${PWD}:${CONTAINER_ROOT} \
+    ${DOCKER_IMAGE} 
+
+docker logs ${CONTAINER_NAME}
+
+docker exec -dit ${CONTAINER_NAME} python frontend/cluster_viz.py
+docker logs ${CONTAINER_NAME}

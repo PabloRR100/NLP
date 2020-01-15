@@ -26,9 +26,8 @@ from scripts.algorithms.clustering import plot_centroids_as_wordclouds
 config = parse_yaml('config.yaml')
 paths = config['paths']
 image_directory = paths['images']
-
-
 logo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/BASF-Logo_bw.svg/1280px-BASF-Logo_bw.svg.png'
+
 
 ''' ---------------------------------- HP ---------------------------------- '''
 
