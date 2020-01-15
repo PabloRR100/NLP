@@ -1,3 +1,4 @@
+import copy
 from collections import deque
 
 class PartialParse(object):
@@ -80,7 +81,20 @@ def minibatch_parse(sentences, model, batch_size):
                       Ordering should be the same as in sentences (i.e., dependencies[i] should
                       contain the parse for sentences[i]).
     """
+    finished_parses = 0
+    dependencies = [None] * len(sentences)
+    partial_parsers = [PartialParse(s) for s in sentences]
+    unfinished_parsers = copy.copy(partial_parsers)
 
+    while len(unfinished_parsers) > 0:
+        parses = unfinished_parsers[:batch_size]
+        pred_transitions = model.predict(parses)
+        for p, (parse, transition) in enumerate(zip(parses, pred_transitions)):
+            parse.parse_step(transition)
+            if len(parse.buffer) == 0 and len(parse.stack) == 1:
+                dependencies[finished_parses + p] = parse.dependencies
+                unfinished_parsers.pop(p)
+                finished_parses += 1
     ### YOUR CODE HERE (~8-10 Lines)
     ### TODO:
     ###     Implement the minibatch parse algorithm as described in the pdf handout
