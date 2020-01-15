@@ -33,6 +33,8 @@ ssh -i $KEY_PATH \
 
 export DOCKER_PORT=8999
 export CLUSTER_PORT=18999
+export DOCKER_PORT_2=8050
+export CLUSTER_PORT_2=8050
 
 export DOCKER_IMAGE=pablorr10/nlp:minimal
 export CONTAINER_NAME=nlpminimal
@@ -51,6 +53,7 @@ docker run --rm -dit \
     -e SERVING_PORT=${DOCKER_PORT} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
     -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
+    -p ${CLUSTER_PORT_2}:${DOCKER_PORT_2} \
     ${DOCKER_IMAGE} 
     # -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
     

@@ -28,6 +28,8 @@ paths = config['paths']
 image_directory = paths['images']
 
 
+logo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/BASF-Logo_bw.svg/1280px-BASF-Logo_bw.svg.png'
+
 ''' ---------------------------------- HP ---------------------------------- '''
 
 MIN_K = 2
@@ -54,7 +56,12 @@ with open(JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.pkl'.format(MIN_
 
 ''' ---------------------------------- APPLICATION ---------------------------------- '''
 
-app = dash.Dash()
+app = dash.Dash(__name__,
+    external_stylesheets=[
+        'https://codepen.io/chriddyp/pen/bWLwgP.css'
+    ]
+)
+
 server = app.server
 static_image_route = '/static/'
 
@@ -62,7 +69,11 @@ app.layout = html.Div([
 
     # TOP BAR
     html.Div([
-        html.H1('BASF')
+        html.A([
+                html.Img(src=logo,
+                     style={'max-width':'10%', 'max-height':'10%'})
+            ], href='https://www.basf.com/es/es.html')
+        # html.H1('BASF')
     ], className = 'row', style={
         'backgroundColor':'green', 
         'text-align':'center', 
@@ -70,25 +81,38 @@ app.layout = html.Div([
         'font-family':'verdana',
         'font-size':'150%',
         'color':'white'}),    
-
-    # 3d Scatter Plot
-    html.Div([
-        html.H3('How many clusters would you like?'),
-        dcc.Dropdown(
-            id='num_cluster_dropwdown',
-            options=[{'label': i, 'value': i} for i in embeddings_df['num_clusters'].unique()],
-            value=embeddings_df['num_clusters'].unique()[0])
-    ], style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "33%"}),
-
-    html.Div([
-        dcc.Graph(id='umap')
-    ]),
-
-    # Wordcloud
-    html.Div([
-        html.Img(id='wordclouds', src='')
-    ]),
     
+    html.Div([
+        
+        html.Div([
+            
+            # 3d Scatter Plot
+            html.Div([
+                
+                html.Div([
+                    html.H3('How many clusters would you like?'),
+                ], style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "80%", 'text-align':'center'}),
+
+                html.Div([
+                    dcc.Dropdown(
+                    id='num_cluster_dropwdown',
+                    options=[{'label': i, 'value': i} for i in embeddings_df['num_clusters'].unique()],
+                    value=embeddings_df['num_clusters'].unique()[0])
+                ], style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "30%"})
+            ]),
+
+            html.Div([
+                dcc.Graph(id='umap')
+            ]),
+
+        ], className = 'six columns',),
+
+        # Wordcloud
+        html.Div([
+            html.Img(id='wordclouds', src='')
+        ], className = 'six columns', style={}),
+
+    ], className = 'row')
 ])
 
 @app.callback(
@@ -96,9 +120,10 @@ app.layout = html.Div([
     [Input('num_cluster_dropwdown', 'value')])
 def update_umap(num_clusters):
     d = embeddings_df[embeddings_df['num_clusters'] == num_clusters]    
+    d['cluster'] = d['cluster'].astype(str)
     fig = px.scatter_3d(d, x='d1', y='d2', z='d3', color='cluster')
     fig.update_traces(marker=dict(size=3))
-    fig.update_layout(height=700)
+    fig.update_layout(title_text='Document emebdding clusters', title_x=0.5, showlegend=False)
     return fig 
 
 @app.callback(
@@ -112,6 +137,6 @@ def update_image_src(num_clusters):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', debug=True)
 
 exit()
