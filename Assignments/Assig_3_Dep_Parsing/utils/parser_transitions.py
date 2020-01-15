@@ -1,3 +1,5 @@
+from collections import deque
+
 class PartialParse(object):
     def __init__(self, sentence):
         """Initializes this partial parse.
@@ -19,20 +21,11 @@ class PartialParse(object):
         """
         # The sentence being parsed is kept for bookkeeping purposes. Do not use it in your code.
         self.sentence = sentence
-
-        ### YOUR CODE HERE (3 Lines)
-        ### Your code should initialize the following fields:
-        ###     self.stack: The current stack represented as a list with the top of the stack as the
-        ###                 last element of the list.
-        ###     self.buffer: The current buffer represented as a list with the first item on the
-        ###                  buffer as the first item of the list
-        ###     self.dependencies: The list of dependencies produced so far. Represented as a list of
-        ###             tuples where each tuple is of the form (head, dependent).
-        ###             Order for this list doesn't matter.
-        ###
-        ### Note: The root token should be represented with the string "ROOT"
-        ###
-
+        ### YOUR CODE HERE (3 lines)
+        self.stack = list(["ROOT"])
+        # self.buffer = deque(sentence)
+        self.buffer = list(sentence)
+        self.dependencies = list()
         ### END YOUR CODE
 
     def parse_step(self, transition):
@@ -44,13 +37,17 @@ class PartialParse(object):
                         transition.
         """
         ### YOUR CODE HERE (~7-10 Lines)
-        ### TODO:
-        ###     Implement a single parsing step, i.e. the logic for the following as
-        ###     described in the pdf handout:
-        ###         1. Shift
-        ###         2. Left Arc
-        ###         3. Right Arc
-
+        if transition == 'S':
+            #self.stack.append(self.buffer.popleft())
+            self.stack.append(self.buffer.pop(0))
+        if transition == 'LA':
+            head, dependent = self.stack[-1], self.stack[-2]
+            self.dependencies.append((head, dependent))
+            self.stack.pop(-2)
+        if transition == 'RA':
+            head, dependent = self.stack[-2], self.stack[-1]
+            self.dependencies.append((head, dependent))
+            self.stack.pop(-1)
         ### END YOUR CODE
 
     def parse(self, transitions):
