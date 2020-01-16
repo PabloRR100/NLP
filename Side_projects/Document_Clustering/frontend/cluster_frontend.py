@@ -20,7 +20,7 @@ if DOCKER:
     WORKDIR = '/app/'
 else:
     WORKDIR = 'c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering'
-    WORKDIR = '/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
+    WORKDIR = '/Users/pabloruizruiz/twoDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
 
 os.chdir(WORKDIR)
 print('WORKING DIRECTORY: ', WORKDIR)
@@ -87,65 +87,103 @@ app.layout = html.Div([
         'font-size':'150%',
         'color':'white'}),    
     
+    # BODY
     html.Div([
         
+        # LEFT-HAND CHART --> SCATTER PLOT
         html.Div([
             
-            # 3d Scatter Plot
+            # LEFT TOP HALF --> 4 DROPDOWNS
             html.Div([
                 
-                # html.Div([
-                #     html.H3('How many clusters would you like?'),
-                # ], style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "80%", 'text-align':'center'}),
-
+                # LEFT TOP HALF LEFT HALF --> FIRST 2 DROPDOWN
                 html.Div([
-                
-                    # Number of clusters ?
+                    
+                    # DROPDOWN: Number of clusters ?
                     html.Div([
-                        dcc.Dropdown(
-                        id='num_cluster_dropwdown',
-                        options=[{'label': i, 'value': i} for i in K_VALUES],
-                        value=K_VALUES[0])
-                    ], className='six columns'), # style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "30%"})
+                        # Title
+                        html.Div(
+                            [html.P('Number of Clusters')
+                        ], className='four columns'),
+                        # Dropdown
+                        html.Div([
+                            dcc.Dropdown(
+                            id='num_cluster_dropwdown',
+                            options=[{'label': i, 'value': i} for i in K_VALUES],
+                            value=K_VALUES[0])
+                        ], className='two columns')
 
-                    # Clustering method ? 
+                    ], className='row', style={'margin-top':'5%', 'margin-bottom':'5%', 'padding-left':'20%'}), 
+
+                    # DROPDOWN: Clustering method ? 
                     html.Div([
-                        dcc.Dropdown(
-                        id='cluster_alg_dropwdown',
-                        options=[{'label': i, 'value': i} for i in CLUST_METHODS],
-                        value=CLUST_METHODS[0])
-                    ], className='six columns'), # style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "30%"})
+                        # Title
+                        html.Div([html.P('Clustering method')], className='four columns'),
+                        # Dropdown
+                        html.Div([
+                            dcc.Dropdown(
+                            id='cluster_alg_dropwdown',
+                            options=[{'label': i, 'value': i} for i in CLUST_METHODS],
+                            value=CLUST_METHODS[0])
+                        ], className='two columns')
+                    ], className='row')  
 
-                    # Dimensions to visualize ?
+                ], className='six columns'),
+
+                # LEFT TOP HALF RIGHT HALF --> FIRST 2 DROPDOWN
+                html.Div([
+                        
+                    # DROPDOWN: DIMESIONS TO VISUALIZE ? 
                     html.Div([
-                        dcc.Dropdown(
-                        id='viz_dim_dropwdown',
-                        options=[{'label': i, 'value': i} for i in VIZ_DIMENSIONS],
-                        value=3)
-                    ], className='six columns'), # style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "30%"})
+                        
+                        # Title
+                        html.Div([
+                            html.P('Plot Dimensions')
+                        ], className='four columns'),
+                        
+                        # Dropdown
+                        html.Div([
+                            dcc.Dropdown(
+                            id='viz_dim_dropwdown',
+                            options=[{'label': i, 'value': i} for i in VIZ_DIMENSIONS],
+                            value=3)
+                        ], className='two columns')
 
-                    # Dimensionality reduction ?
+                    ], className='row'), 
+
+                    # DROPDOWN: DIM REDUCTOR? s
                     html.Div([
-                        dcc.Dropdown(
-                        id='dim_reduction_dropwdown',
-                        options=[{'label': i, 'value': i} for i in DIM_REDUCTORS],
-                        value=DIM_REDUCTORS[0])
-                    ], className='six columns') # style={"display": "block", "margin-left": "auto", "margin-right": "auto", "width": "30%"})
+                        
+                        # Title
+                        html.Div([
+                            html.P('Dim Reductor')
+                            ], className='four columns'),
+                        
+                        # Dropdown
+                        html.Div([
+                            dcc.Dropdown(
+                            id='dim_reduction_dropwdown',
+                            options=[{'label': i, 'value': i} for i in DIM_REDUCTORS],
+                            value=DIM_REDUCTORS[0])
+                        ], className='two columns')
 
-                ], className='row')
+                    ], className='row'), 
 
-            ]),
+                ], className='six columns')
 
+            ], className = 'row'),
+
+            # LEFT BOTTOM HALF --> SCATTER PLOT
             html.Div([
                 dcc.Graph(id='umap')
-            ]),
-
+            ], className = 'row'),
         ], className = 'six columns'),
 
-        # Wordcloud
+
+        # RIGHT-HAND CHART --> WORDCLOUD
         html.Div([
-            html.Img(id='wordclouds', src='')
-        ], className = 'six columns', style={}),
+            html.Div([html.Img(id='wordclouds', src='')])
+        ], className = 'six columns')
 
     ], className = 'row')
 ])

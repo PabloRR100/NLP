@@ -118,7 +118,8 @@ for reducter in dim_reducters:
             cluster_results[k][method.__name__][reducter.__class__.__name__]['wordcluds'] = scores
 
             # Create and store wordclouds
-            fig = plot_centroids_as_wordclouds(scores, n_cols=2-k%2)
+            # fig = plot_centroids_as_wordclouds(scores, n_cols=2-k%2)
+            fig = plot_centroids_as_wordclouds(scores, n_cols=k)
             fig.savefig(JP(paths['images'], 'wordcloud_clusters_{}_{}_{}.png'.format(k, method.__name__, reducter.__class__.__name__)))
 
 # SAVE
