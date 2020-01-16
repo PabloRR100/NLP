@@ -73,7 +73,7 @@ import umap
 # import hdbscan
 from sklearn.decomposition import PCA
 from scripts.algorithms.clustering import kmeans_clustering, kmedoids_clustering
-# from scripts.algorithms.clustering import words_per_cluster
+from scripts.algorithms.clustering import plot_centroids_as_wordclouds
 
 
 dim_reducters = [
@@ -94,10 +94,10 @@ for reducter in dim_reducters:
         for method in clustering_methods:
             
             print('[INFO]: Num_clusters = {} Method = {} Red_dim_technique = {}'.format(
-                k, method.__name__, reducter.__class__))
+                k, method.__name__, reducter.__class__.__name__))
 
             # Run algorithm
-            clusters = method(data_low_dim, num_clusters=k)
+            clusters = method(data_low_dim.copy(), num_clusters=k)
             # words = words_per_cluster(tfidf, clusters)
 
             # Compute word importance -> centroids
@@ -106,20 +106,24 @@ for reducter in dim_reducters:
             scores = pd.melt(centroids, id_vars=['cluster'], var_name='word', value_name='score')
             
             # Collect data_low_dim with labes
-            data_low_dim = pd.DataFrame(data_low_dim, columns=['d{}'.format(i+1) for i in range(data_low_dim.shape[1])])
-            data_low_dim['cluster'] = clusters.labels_
+            data_low_dim_df = pd.DataFrame(data_low_dim, columns=['d{}'.format(i+1) for i in range(data_low_dim.shape[1])])
+            data_low_dim_df['cluster'] = clusters.labels_
             
-            # Store
+            # Store clustering results
             # words_results[k][method][reducter] = scoress
             # embedding_results[k][method][reducter] = data_low_dim.copy()
-            cluster_results[k][method.__name__][reducter.__class__]['scatter'] = data_low_dim
-            cluster_results[k][method.__name__][reducter.__class__]['wordcluds'] = scores
             # words_results[k][method][reducter]['num_clusters'] = k 
             # embedding_results[k][method][reducter]['num_clusters'] = k
+            cluster_results[k][method.__name__][reducter.__class__.__name__]['scatter'] = data_low_dim_df
+            cluster_results[k][method.__name__][reducter.__class__.__name__]['wordcluds'] = scores
+
+            # Create and store wordclouds
+            fig = plot_centroids_as_wordclouds(scores, n_cols=2-k%2)
+            fig.savefig(JP(paths['images'], 'wordcloud_clusters_{}_{}_{}.png'.format(k, method.__name__, reducter.__class__.__name__)))
 
 # SAVE
-print('[INFO]: Saving...')
-name = '{}_{}_{}'.format(method.__name__, reducter.__class__, k)
+name = '{}_{}_{}'.format(method.__name__, reducter.__class__.__name__, k)
+print('[INFO]: Saving {}'.format(name))
 with open(JP(paths['results'], name+'.pkl'), 'wb') as f:
     pickle.dump(defaultdict_to_dict(cluster_results), f)
 

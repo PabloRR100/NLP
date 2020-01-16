@@ -29,28 +29,26 @@ image_directory = paths['images']
 logo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/BASF-Logo_bw.svg/1280px-BASF-Logo_bw.svg.png'
 
 
-''' ---------------------------------- HP ---------------------------------- '''
-
-MIN_K = 2
-MAX_K = 10
 
 
 ''' ---------------------------------- DATA ---------------------------------- '''
 
 images_basename = 'wordcloud_clusters'
-
-words_df = pd.read_csv(
-    JP(paths['results'], 'words_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
-
-embeddings_df = pd.read_csv(
-    JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
-
-with open(JP(paths['results'], 'words_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
-    words = pickle.load(f)
-
+# words_df = pd.read_csv(
+#     JP(paths['results'], 'words_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
+# embeddings_df = pd.read_csv(
+#     JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
+# with open(JP(paths['results'], 'words_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
+#     words = pickle.load(f)
+# with open(JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
+#     embeddings = pickle.load(f)
 with open(JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
     embeddings = pickle.load(f)
 
+''' ---------------------------------- HP ---------------------------------- '''
+
+MIN_K = 2
+MAX_K = 10
 # embeddings_df['num_clusters'] = embeddings_df['num_clusters'].apply(lambda x: str(x))
 
 ''' ---------------------------------- APPLICATION ---------------------------------- '''
