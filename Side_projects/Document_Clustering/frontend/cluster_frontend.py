@@ -104,31 +104,33 @@ app.layout = html.Div([
                         # Title
                         html.Div(
                             [html.P('Number of Clusters')
-                        ], className='four columns'),
+                        ], className='six columns'),
                         # Dropdown
                         html.Div([
                             dcc.Dropdown(
                             id='num_cluster_dropwdown',
                             options=[{'label': i, 'value': i} for i in K_VALUES],
                             value=K_VALUES[0])
-                        ], className='two columns')
+                        ], className='four columns')
 
-                    ], className='row', style={'margin-top':'5%', 'margin-bottom':'5%', 'padding-left':'20%'}), 
+                    ], className='row', style={'padding-bottom':'5px'}), 
 
                     # DROPDOWN: Clustering method ? 
                     html.Div([
                         # Title
-                        html.Div([html.P('Clustering method')], className='four columns'),
+                        html.Div([
+                            html.P('Clustering method')
+                            ], className='six columns'),
                         # Dropdown
                         html.Div([
                             dcc.Dropdown(
                             id='cluster_alg_dropwdown',
                             options=[{'label': i, 'value': i} for i in CLUST_METHODS],
                             value=CLUST_METHODS[0])
-                        ], className='two columns')
-                    ], className='row')  
+                        ], className='four columns')
+                    ], className='row', style={'padding-bottom':'5px'})  
 
-                ], className='six columns'),
+                ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'}),
 
                 # LEFT TOP HALF RIGHT HALF --> FIRST 2 DROPDOWN
                 html.Div([
@@ -139,7 +141,7 @@ app.layout = html.Div([
                         # Title
                         html.Div([
                             html.P('Plot Dimensions')
-                        ], className='four columns'),
+                        ], className='six columns'),
                         
                         # Dropdown
                         html.Div([
@@ -147,9 +149,9 @@ app.layout = html.Div([
                             id='viz_dim_dropwdown',
                             options=[{'label': i, 'value': i} for i in VIZ_DIMENSIONS],
                             value=3)
-                        ], className='two columns')
+                        ], className='four columns')
 
-                    ], className='row'), 
+                    ], className='row', style={'padding-bottom':'5px'}), 
 
                     # DROPDOWN: DIM REDUCTOR? s
                     html.Div([
@@ -157,7 +159,7 @@ app.layout = html.Div([
                         # Title
                         html.Div([
                             html.P('Dim Reductor')
-                            ], className='four columns'),
+                            ], className='six columns'),
                         
                         # Dropdown
                         html.Div([
@@ -165,11 +167,11 @@ app.layout = html.Div([
                             id='dim_reduction_dropwdown',
                             options=[{'label': i, 'value': i} for i in DIM_REDUCTORS],
                             value=DIM_REDUCTORS[0])
-                        ], className='two columns')
+                        ], className='four columns')
 
-                    ], className='row'), 
+                    ], className='row', style={'padding-bottom':'5px'}), 
 
-                ], className='six columns')
+                ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'})
 
             ], className = 'row'),
 
