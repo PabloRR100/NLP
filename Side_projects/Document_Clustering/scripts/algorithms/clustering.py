@@ -5,6 +5,7 @@ import pandas as pd
 from copy import deepcopy
 from collections import defaultdict
 
+# import hdbscan
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import pdist
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
@@ -73,12 +74,11 @@ def compute_word_importance_using_documents(model, words_of_cluster=None):
 
 
 '''
-REGULAR CLUSTERING 
-==================
+ALGORITHMS
+==========
 '''
 
-''' ALGORITHMS '''
-def kmean_clustering(
+def kmeans_clustering(
     data:pd.DataFrame,
     num_clusters:int=4,
     njobs=-1,
@@ -111,6 +111,42 @@ def kmedoids_clustering(
         metric=metric,
         random_state=random_state)
     return km.fit(model.representation)
+
+# def hdbscan_clustering(
+#     model, # class Model
+#     num_clusters:int=4,
+#     metric='cosine',
+#     random_state=46):
+#     km = hdbscan()
+#     return km.fit_predict(model.representation)
+
+
+def get_centroids(
+    model, #:Model
+    clusters:KMeans):
+    ''' Return the TFIDF representation of the centroids of a KMeans object '''
+    centroids = pd.DataFrame(clusters.cluster_centers_, columns=model.representation.columns)
+    centroids.index = range(1,clusters.cluster_centers_.shape[0]+1)
+    return centroids
+
+def words_per_cluster(
+    model,
+    clusters:KMeans,
+    words_per_cluster:int=None):
+    '''
+    Input: TFIDF representation of a corpus with labels assigned from a clustering run
+    Output: Sorted words by importance for each cluster
+    '''    
+    cluster_words = defaultdict(list)
+    centroids = clusters.cluster_centers_
+    
+    # For each centroid
+    for i,centroid in enumerate(centroids):
+        # Bring K most similar words to centroid i
+        closests_words_to_centroid = centroid.argsort()[::-1] 
+        for idx in closests_words_to_centroid:
+            cluster_words[i].append(model.id2token[idx])
+    return cluster_words
 
 
 ''' PLOTS  '''

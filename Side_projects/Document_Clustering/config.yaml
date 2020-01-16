@@ -1,10 +1,11 @@
 paths: 
-    results: results/
-    catalog: data/catalog
-    checkpoints: checkpoints/
-    stopwords: data/stopwords/
     data: data/
     images: images/
+    results: results/
+    catalog: data/catalog
+    documents: data/documents
+    checkpoints: checkpoints/
+    stopwords: data/stopwords/
 
 topic: isocyanate
 classes: [relevant, irrelevant]
