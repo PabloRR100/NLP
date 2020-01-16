@@ -5,6 +5,7 @@ import pickle
 from glob import glob
 from os.path import abspath
 from os.path import join as JP
+from collections import defaultdict
 
 def remove_zip_files(path):
     for fil in glob(JP(path,'*.zip')):
@@ -55,3 +56,9 @@ def dict_to_yaml(data, dirpath, filename):
     with open(JP(dirpath,filename), 'w+') as f:
         yaml.dump(data, f)
     return
+
+
+def defaultdict_to_dict(d):
+    if isinstance(d, defaultdict):
+        d = {k: default_to_regular(v) for k, v in d.items()}
+    return d
