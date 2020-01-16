@@ -8,7 +8,6 @@ import pandas as pd
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from collections import defaultdict
-import string
 
 from utils.nlp_utils import preproces
 from utils.general import parse_yaml
@@ -28,7 +27,8 @@ tqdm.pandas()
 catalog = Catalog()
 config = parse_yaml('config.yaml')
 paths = config['paths']
-os.chdir('c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering')
+os.chdir('/app/')
+# os.chdir('c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering')
 
 nlp = spacy.load('en_core_web_sm') # Powerfull model with everytihing included
 def spacy_cleaning(
@@ -48,7 +48,7 @@ def spacy_cleaning(
 
 ''' DATA '''
 name = '20newsgroup.csv'
-data = pd.read_csv(JP('data',name)).iloc[:,1:]
+data = pd.read_csv(JP('data', name)).iloc[:,1:]
 data.head()
 
 documents = [Document() for i in range(data.shape[0])]
@@ -83,45 +83,4 @@ tfidf = catalog.to_matrix(
     max_docs=50)
 
 tfidf.representation.head()
-
-
-''' LDA '''
-NUM_TOPICS = NUM_CLUSTERS = 5
-
-# Functions for printing keywords for each topic
-def selected_topics(model, vectorizer, top_n=10):
-    for idx, topic in enumerate(model.components_):
-        print("Topic %d:" % (idx))
-        print([vectorizer.get_feature_names()[i] for i in topic.argsort()[:-top_n - 1:-1]]) 
-
-
-from sklearn.decomposition import LatentDirichletAllocation
-lda = LatentDirichletAllocation(
-    n_components=NUM_TOPICS, 
-    max_iter=100, 
-    learning_method='online',
-    verbose=True,)
-
-# LOAD
-with open(JP(paths['checkpoints'], 'lda_sklearn_local.pkl'), 'rb') as obj:
-    lda = pickle.load(obj)
-lda
-
-# TRAIN
-print('Latent Semantion Allocation')
-data_lda = lda.fit_transform(tfidf.representation)
-
-# Save
-with open(JP(paths['checkpoints'], 'lda_sklearn_local.pkl'), 'wb') as obj:
-    pickle.dump(lda,obj)
-
-# Evaluation
-# Keywords for topics clustered by Latent Dirichlet Allocation
-print("LDA Model:")
-selected_topics(lda, vectorizer, 8)
-
-# Visualziation
-import pyLDAvis
-import pyLDAvis.sklearn
-pyLDAvis.sklearn.prepare(lda, tfidf.representation.values, tfidf.dtm_sparse, mds='tsne')
 
