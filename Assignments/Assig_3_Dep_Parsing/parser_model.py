@@ -41,6 +41,14 @@ class ParserModel(nn.Module):
         self.pretrained_embeddings = nn.Embedding(embeddings.shape[0], self.embed_size)
         self.pretrained_embeddings.weight = nn.Parameter(torch.tensor(embeddings))
 
+        self.embed_to_hidden = nn.Linear(self.embed_size, self.hidden_size)
+        torch.nn.init.xavier_uniform_(self.embed_to_hidden.weight)
+
+        self.dropout = nn.Dropout(p=self.dropout_prob)
+
+        self.hidden_to_logits = nn.Linear(self.hidden_size, self.n_classes)
+        torch.nn.init.xavier_uniform_(self.hidden_to_logits.weight)
+
         ### YOUR CODE HERE (~5 Lines)
         ### TODO:
         ###     1) Construct `self.embed_to_hidden` linear layer, initializing the weight matrix
@@ -82,6 +90,8 @@ class ParserModel(nn.Module):
             @return x (Tensor): tensor of embeddings for words represented in t
                                 (batch_size, n_features * embed_size)
         """
+        embeddings = self.pretrained_embeddings(t)
+        embeddings = embeddings.view(embeddings.shape[0], -1)
         ### YOUR CODE HERE (~1-3 Lines)
         ### TODO:
         ###     1) Use `self.pretrained_embeddings` to lookup the embeddings for the input tokens in `t`.
@@ -96,7 +106,7 @@ class ParserModel(nn.Module):
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
 
         ### END YOUR CODE
-        return x
+        return embeddings
 
     def forward(self, t):
         """ Run the model forward.
@@ -117,6 +127,11 @@ class ParserModel(nn.Module):
         @return logits (Tensor): tensor of predictions (output after applying the layers of the network)
                                  without applying softmax (batch_size, n_classes)
         """
+        e = self.embedding_lookup(t)
+        h = self.embed_to_hidden(e)
+        h = nn.functional.relu(h)
+        h = self.dropout(h)
+        logits = self.hidden_to_logits(h)
         ###  YOUR CODE HERE (~3-5 lines)
         ### TODO:
         ###     1) Apply `self.embedding_lookup` to `t` to get the embeddings
