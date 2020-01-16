@@ -162,14 +162,13 @@ def define_subplots(n_cols,n_plots,figsize=None):
     of plots and desired number of columns'''
     j = 1 if n_plots%n_cols != 0 else 0
     n_rows = (n_plots // n_cols) + j 
-    
+
     if not figsize: 
         figsize=(n_cols*5,n_rows*5)
-    
+        
     fig, axs = plt.subplots(
         nrows=n_rows, ncols=n_cols, sharex=False, sharey=False,
         figsize=figsize)
-    
     return fig,axs
 
 def cluster_to_wordcloud(
@@ -211,11 +210,7 @@ def plot_centroids_as_wordclouds(
             axs[c // n_cols, c % n_cols].imshow(wordcloud)
             axs[c // n_cols, c % n_cols].axis('off')
     plt.tight_layout()
-    if not show:
-        return fig
-    else:
-        plt.show()
-    return
+    return fig
 
 
 def plot_clusters_as_wordclouds(
