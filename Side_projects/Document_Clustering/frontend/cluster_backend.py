@@ -122,9 +122,9 @@ for reducter in dim_reducters:
             fig.savefig(JP(paths['images'], 'wordcloud_clusters_{}_{}_{}.png'.format(k, method.__name__, reducter.__class__.__name__)))
 
 # SAVE
-name = '{}_{}_{}'.format(method.__name__, reducter.__class__.__name__, k)
-print('[INFO]: Saving {}'.format(name))
-with open(JP(paths['results'], name+'.pkl'), 'wb') as f:
+# name = '{}_{}_{}'.format(method.__name__, reducter.__class__.__name__, k)
+print('[INFO]: Saving ...')
+with open(JP(paths['results'], 'clustering.pkl'), 'wb') as f:
     pickle.dump(defaultdict_to_dict(cluster_results), f)
 
 exit()
