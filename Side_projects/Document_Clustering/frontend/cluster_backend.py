@@ -39,7 +39,7 @@ print('WORKING DIRECTORY: ', WORKDIR)
 sys.path.append(WORKDIR)
 sys.path.append(JP(WORKDIR,'utils'))
 sys.path.append(JP(WORKDIR,'scripts'))
-from utils.general import parse_yaml
+from utils.general import parse_yaml, defaultdict_to_dict
 from scripts.catalog import Catalog, load_catalog, load_corpus
 
 # tqdm.pandas()
@@ -70,31 +70,34 @@ cluster_results = nested_dict()
 
 
 import umap
-import hdbscan
+# import hdbscan
 from sklearn.decomposition import PCA
 from scripts.algorithms.clustering import kmeans_clustering, kmedoids_clustering
 # from scripts.algorithms.clustering import words_per_cluster
 
 
 dim_reducters = [
-    PCA(n_components=EMBED_SIZE), 
+    PCA(n_components=EMBED_SIZE),
     umap.UMAP(n_neighbors=5, n_components=EMBED_SIZE, metric='cosine')]
 
 clustering_methods = [
-    kmeans_clustering] 
-    # kmedoids_clustering]
+    kmeans_clustering, 
+    kmedoids_clustering]
     # hdbscan.HDBSCAN(min_samples=10, min_cluster_size=MIN_CLUSTER_SIZE)]
 
 for reducter in dim_reducters:
-    for method in clustering_methods:
-        for k in range(MIN_K, MAX_K):
+    
+    data_low_dim = reducter.fit_transform(data.copy())
+    
+    for k in range(MIN_K, MAX_K):
+        
+        for method in clustering_methods:
             
             print('[INFO]: Num_clusters = {} Method = {} Red_dim_technique = {}'.format(
                 k, method.__name__, reducter.__class__))
 
             # Run algorithm
-            data_low_dim = reducter.fit_transform(data.copy())
-            clusters = method(data_low_dim, njobs=-1, num_clusters=k)
+            clusters = method(data_low_dim, num_clusters=k)
             # words = words_per_cluster(tfidf, clusters)
 
             # Compute word importance -> centroids
@@ -118,6 +121,6 @@ for reducter in dim_reducters:
 print('[INFO]: Saving...')
 name = '{}_{}_{}'.format(method.__name__, reducter.__class__, k)
 with open(JP(paths['results'], name+'.pkl'), 'wb') as f:
-    pickle.dump(dict(cluster_results), f)
+    pickle.dump(defaultdict_to_dict(cluster_results), f)
 
 exit()

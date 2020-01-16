@@ -7,6 +7,7 @@ from collections import defaultdict
 
 # import hdbscan
 from sklearn.cluster import KMeans
+from sklearn_extra.cluster import KMedoids
 from scipy.spatial.distance import pdist
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
 
@@ -102,7 +103,7 @@ def kmeans_clustering(
     return km.fit(data)
 
 def kmedoids_clustering(
-    model, # class Model
+    data:pd.DataFrame,
     num_clusters:int=4,
     metric='cosine',
     random_state=46):
@@ -110,7 +111,7 @@ def kmedoids_clustering(
         n_clusters=num_clusters,
         metric=metric,
         random_state=random_state)
-    return km.fit(model.representation)
+    return km.fit(data)
 
 # def hdbscan_clustering(
 #     model, # class Model

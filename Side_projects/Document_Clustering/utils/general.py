@@ -60,5 +60,5 @@ def dict_to_yaml(data, dirpath, filename):
 
 def defaultdict_to_dict(d):
     if isinstance(d, defaultdict):
-        d = {k: default_to_regular(v) for k, v in d.items()}
+        d = {k: defaultdict_to_dict(v) for k, v in d.items()}
     return d

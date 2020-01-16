@@ -36,5 +36,6 @@ EXPOSE 9999
 
 RUN cat /etc/*-release
 
+RUN pip install https://github.com/scikit-learn-contrib/scikit-learn-extra/archive/master.zip
 RUN jupyter contrib nbextension install --user
 CMD jupyter notebook --ip='0.0.0.0' --port=${SERVING_PORT} --no-browser --allow-root --notebook-dir=${PROJECT_ROOT}
