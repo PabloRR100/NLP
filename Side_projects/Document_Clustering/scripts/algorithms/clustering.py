@@ -77,49 +77,40 @@ REGULAR CLUSTERING
 ==================
 '''
 
-''' ALGORITHM '''
-
-def kmeans_clustering(
-    model, #:Model
-    num_clusters:int=4, 
-    words_per_cluster:int=None):
+''' ALGORITHMS '''
+def kmean_clustering(
+    data:pd.DataFrame,
+    num_clusters:int=4,
+    njobs=-1,
+    random_state=46):
     '''
-    TODO: Consider MiniBatchKMeans
-    
-    Clusters using k-mean with k words per cluster
-    ----------------------------------------------
-        The k-words are the k closest to the centroid of that cluster
-        Equivalently: the words are the ones most present in the 'fake'
-        document represented by the centroid of the cluster
-
-    Inputs:
-    -------
+    Perform K-Means Algorithm
+    Args:
         - model: Trained instance of class Model
         - num_clusters: Number of Clusters to look for
-        - words_per_cluster: K parameter above
 
-    Returns:
-    -------- 
+    Returns: 
         - Clustering model instance
-        - Dict key='cluster id', value=k_words_closest_to_centroid
     '''
-    # 1. Performs K-Means algorithm to identify clusters
     km = KMeans(
-        n_clusters=num_clusters) #,
-        #n_jobs=-1)
-    
-    # 1. Performs K-Means algorithm to identify clusters
-    clusters=km.fit(model.representation)
+        n_clusters=num_clusters,
+        init='k-means++',
+        n_init=20,
+        max_iter=1000,
+        n_jobs=njobs,
+        random_state=random_state)
+    return km.fit(data)
 
-    # 2. Bring K most similar words to centroid
-    closests_words_to_centroids = clusters.cluster_centers_.argsort()[:, :-words_per_cluster:-1] 
-    
-    # 3. Create a dictionary {'cluster_id': 'important_words'}
-    cluster_words = defaultdict(list)
-    for i in range(num_clusters):
-        for idx in closests_words_to_centroids[i, :words_per_cluster]:
-            cluster_words[i].append(model.id2token[idx])
-    return clusters, cluster_words
+def kmedoids_clustering(
+    model, # class Model
+    num_clusters:int=4,
+    metric='cosine',
+    random_state=46):
+    km = KMedoids(
+        n_clusters=num_clusters,
+        metric=metric,
+        random_state=random_state)
+    return km.fit(model.representation)
 
 
 ''' PLOTS  '''
