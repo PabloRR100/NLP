@@ -81,28 +81,27 @@ def minibatch_parse(sentences, model, batch_size):
                       Ordering should be the same as in sentences (i.e., dependencies[i] should
                       contain the parse for sentences[i]).
     """
-    finished_parses = 0
-    dependencies = [None] * len(sentences)
+    
     partial_parsers = [PartialParse(s) for s in sentences]
     unfinished_parsers = copy.copy(partial_parsers)
-    
-    finished_parsers = list() # Let's keep track of how they finish to see why they fail
 
     while len(unfinished_parsers) > 0:
-        parses = unfinished_parsers[:batch_size]
-        pred_transitions = model.predict(parses)
-        print('Remaining parsers: ', len(unfinished_parsers))
-        print('Taking into the loop: ', len(parses))
+        
+        parses = unfinished_parsers[:batch_size]                    # Take the first batch_size parses in unfinished_parses
+        pred_transitions = model.predict(parses)                    # Predict the next transition for each partial parse in the miniibatch
+
+        if len(unfinished_parsers) == 465:
+            a = 10
+
+        finished_ids = list()
         for p, (parse, transition) in enumerate(zip(parses, pred_transitions)):
-            if len(finished_parsers) == 6:
-                a = 5
-            parse.parse_step(transition)
+            parse.parse_step(transition)       
+                                 # Perform a parse step on each partial parse in the minibatch
             if len(parse.buffer) == 0 and len(parse.stack) == 1:
-                print('Parsing finished for sentence ', finished_parses + p)
-                dependencies[finished_parses + p] = parse.dependencies
-                finished_parsers.append(finished_parses + p)
-                unfinished_parsers.pop(p)
-                finished_parses += 1
+                finished_ids.append(p)
+        
+        unfinished_parsers = [p for i,p in enumerate(unfinished_parsers) if i not in finished_ids]
+
     ### YOUR CODE HERE (~8-10 Lines)
     ### TODO:
     ###     Implement the minibatch parse algorithm as described in the pdf handout
@@ -118,8 +117,7 @@ def minibatch_parse(sentences, model, batch_size):
     ###             is being accessed by `partial_parses` and may cause your code to crash.
 
     ### END YOUR CODE
-
-    return dependencies
+    return [partial_parser.dependencies for partial_parser in partial_parsers]
 
 
 def test_step(name, transition, stack, buf, deps,
