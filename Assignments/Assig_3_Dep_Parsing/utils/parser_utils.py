@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import logging
 import os
 import time
+import logging
 from collections import Counter
 
-import numpy as np
 import torch
+import numpy as np
 from tqdm import tqdm
 
-from .parser_transitions import minibatch_parse
 from .general_utils import get_minibatches
+from .parser_transitions import minibatch_parse
 
 P_PREFIX = '<p>:'
 L_PREFIX = '<l>:'
@@ -58,6 +58,14 @@ class Parser(object):
         self.use_pos = config.use_pos
         self.use_dep = config.use_dep
         self.language = config.language
+        # My code
+        print('\nPARSER INFO:')
+        print('Language: ', self.language)
+        print('Using POS: ', self.use_pos)
+        print('Using DEP: ', self.use_dep)
+        print('Using labels: ', not self.unlabeled)
+        print('Using punctuation: ', self.with_punct)
+        print('\n\n')
 
         if self.unlabeled:
             trans = ['L', 'R', 'S']
@@ -70,14 +78,14 @@ class Parser(object):
         self.tran2id = {t: i for (i, t) in enumerate(trans)}
         self.id2tran = {i: t for (i, t) in enumerate(trans)}
 
-        # logging.info('Build dictionary for part-of-speech tags.')
+        logging.info('Build dictionary for part-of-speech tags.') # This was commented
         tok2id.update(build_dict([P_PREFIX + w for ex in dataset for w in ex['pos']],
                                  offset=len(tok2id)))
         tok2id[P_PREFIX + UNK] = self.P_UNK = len(tok2id)
         tok2id[P_PREFIX + NULL] = self.P_NULL = len(tok2id)
         tok2id[P_PREFIX + ROOT] = self.P_ROOT = len(tok2id)
 
-        # logging.info('Build dictionary for words.')
+        logging.info('Build dictionary for words.')  # This was commented
         tok2id.update(build_dict([w for ex in dataset for w in ex['word']],
                                  offset=len(tok2id)))
         tok2id[UNK] = self.UNK = len(tok2id)
@@ -233,6 +241,14 @@ class Parser(object):
         return labels
 
     def parse(self, dataset, eval_batch_size=5000):
+        # My own code
+        ''' 
+        This function is used in evaluation. 
+        It was first used in (a) to evaluate the parsing of sentences once a model
+        had made predictions. (For now is failing when implementing the real model)
+        '''
+        #############
+        ''' Collect sentences from train/test set and convert it to its ids '''
         sentences = []
         sentence_id_to_idx = {}
         for i, example in enumerate(dataset):
@@ -241,7 +257,9 @@ class Parser(object):
             sentences.append(sentence)
             sentence_id_to_idx[id(sentence)] = i
 
+        ''' Initalize a model wrapper with '''
         model = ModelWrapper(self, dataset, sentence_id_to_idx)
+        ''' Run the forward pass and collect the predicted dependencies minibatch wise '''
         dependencies = minibatch_parse(sentences, model, eval_batch_size)
 
         UAS = all_tokens = 0.0
@@ -276,7 +294,7 @@ class ModelWrapper(object):
         mb_x = torch.from_numpy(mb_x).long()
         mb_l = [self.parser.legal_labels(p.stack, p.buffer) for p in partial_parses]
 
-        pred = self.parser.model(mb_x)
+        pred = self.parser.model(mb_x)                                                      # FORWARD PASS ON VALIDATION !
         pred = pred.detach().numpy()
         pred = np.argmax(pred + 10000 * np.array(mb_l).astype('float32'), 1)
         pred = ["S" if p == 2 else ("LA" if p == 0 else "RA") for p in pred]

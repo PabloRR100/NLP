@@ -38,14 +38,14 @@ class PartialParse(object):
                         transition.
         """
         ### YOUR CODE HERE (~7-10 Lines)
-        if transition == 'S':
+        if transition == 'S' and len(self.buffer) >= 1:
             #self.stack.append(self.buffer.popleft())
             self.stack.append(self.buffer.pop(0))
-        if transition == 'LA':
+        if transition == 'LA' and len(self.stack) >= 2:
             head, dependent = self.stack[-1], self.stack[-2]
             self.dependencies.append((head, dependent))
             self.stack.pop(-2)
-        if transition == 'RA':
+        if transition == 'RA' and len(self.stack) >= 2:
             head, dependent = self.stack[-2], self.stack[-1]
             self.dependencies.append((head, dependent))
             self.stack.pop(-1)
@@ -69,8 +69,8 @@ def minibatch_parse(sentences, model, batch_size):
     """Parses a list of sentences in minibatches using a model.
 
     Args:
-        sentences: A list of sentences to be parsed (each sentence is a list of words)
-        model: The model that makes parsing decisions. It is assumed to have a function
+        sentences: A list of sentences to be parsed (each sentence is a list of words)               # Input during the validation phase
+        model: The model that makes parsing decisions. It is assumed to have a function              # Neural network
                model.predict(partial_parses) that takes in a list of PartialParses as input and
                returns a list of transitions predicted for each parse. That is, after calling
                    transitions = model.predict(partial_parses)
@@ -85,14 +85,22 @@ def minibatch_parse(sentences, model, batch_size):
     dependencies = [None] * len(sentences)
     partial_parsers = [PartialParse(s) for s in sentences]
     unfinished_parsers = copy.copy(partial_parsers)
+    
+    finished_parsers = list() # Let's keep track of how they finish to see why they fail
 
     while len(unfinished_parsers) > 0:
         parses = unfinished_parsers[:batch_size]
         pred_transitions = model.predict(parses)
+        print('Remaining parsers: ', len(unfinished_parsers))
+        print('Taking into the loop: ', len(parses))
         for p, (parse, transition) in enumerate(zip(parses, pred_transitions)):
+            if len(finished_parsers) == 6:
+                a = 5
             parse.parse_step(transition)
             if len(parse.buffer) == 0 and len(parse.stack) == 1:
+                print('Parsing finished for sentence ', finished_parses + p)
                 dependencies[finished_parses + p] = parse.dependencies
+                finished_parsers.append(finished_parses + p)
                 unfinished_parsers.pop(p)
                 finished_parses += 1
     ### YOUR CODE HERE (~8-10 Lines)

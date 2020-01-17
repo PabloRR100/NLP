@@ -111,10 +111,10 @@ if __name__ == "__main__":
     print(80 * "=")
     print("INITIALIZING")
     print(80 * "=")
-    parser, embeddings, train_data, dev_data, test_data = load_and_preprocess_data(debug)
+    parser, embeddings, train_data, dev_data, test_data = load_and_preprocess_data(debug)                   # Load data (reduced if debug=True), pretrain embedding and model
 
     start = time.time()
-    model = ParserModel(embeddings)
+    model = ParserModel(embeddings)                 
     parser.model = model
     print("took {:.2f} seconds\n".format(time.time() - start))
 
