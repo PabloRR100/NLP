@@ -58,9 +58,10 @@ data = tfidf.representation
 ''' 2 - Clustering '''
 
 MIN_K = 2
-MAX_K = 4
+MAX_K = 10
 
 EMBED_SIZE = 50
+UMAP_EPOCHS = 50
 MIN_CLUSTER_SIZE = 50
 
 words_results = defaultdict(lambda: defaultdict())
@@ -77,19 +78,22 @@ from scripts.algorithms.clustering import plot_centroids_as_wordclouds
 
 
 dim_reducters = [
-    PCA(n_components=EMBED_SIZE),
-    umap.UMAP(n_neighbors=5, n_components=EMBED_SIZE, metric='cosine')]
+    PCA(n_components=EMBED_SIZE, random_state=46),
+    umap.UMAP(
+        n_epochs=UMAP_EPOCHS, n_neighbors=5, 
+        n_components=EMBED_SIZE, metric='cosine', 
+        random_state=46, verbose=True)]
 
 clustering_methods = [
     kmeans_clustering, 
     kmedoids_clustering]
     # hdbscan.HDBSCAN(min_samples=10, min_cluster_size=MIN_CLUSTER_SIZE)]
 
-for reducter in dim_reducters:
+for reducter in tqdm(dim_reducters):
     
     data_low_dim = reducter.fit_transform(data.copy())
     
-    for k in range(MIN_K, MAX_K):
+    for k in tqdm(range(MIN_K, MAX_K)):
         
         for method in clustering_methods:
             
@@ -110,17 +114,13 @@ for reducter in dim_reducters:
             data_low_dim_df['cluster'] = clusters.labels_
             
             # Store clustering results
-            # words_results[k][method][reducter] = scoress
-            # embedding_results[k][method][reducter] = data_low_dim.copy()
-            # words_results[k][method][reducter]['num_clusters'] = k 
-            # embedding_results[k][method][reducter]['num_clusters'] = k
             cluster_results[k][method.__name__][reducter.__class__.__name__]['scatter'] = data_low_dim_df
-            cluster_results[k][method.__name__][reducter.__class__.__name__]['wordcluds'] = scores
+            cluster_results[k][method.__name__][reducter.__class__.__name__]['wordclouds'] = scores
 
             # Create and store wordclouds
+            # fig = plot_centroids_as_wordclouds(scores, n_cols=1, figsize=(15,15))
             # fig = plot_centroids_as_wordclouds(scores, n_cols=2-k%2)
-            fig = plot_centroids_as_wordclouds(scores, n_cols=k)
-            fig.savefig(JP(paths['images'], 'wordcloud_clusters_{}_{}_{}.png'.format(k, method.__name__, reducter.__class__.__name__)))
+            # fig.savefig(JP(paths['images'], 'wordcloud_clusters_{}_{}_{}.png'.format(k, method.__name__, reducter.__class__.__name__)))
 
 # SAVE
 # name = '{}_{}_{}'.format(method.__name__, reducter.__class__.__name__, k)

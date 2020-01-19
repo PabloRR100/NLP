@@ -2,6 +2,8 @@
 import os
 import sys
 import base64
+from io import BytesIO
+
 import pickle
 import pandas as pd
 from os.path import join as JP
@@ -20,7 +22,7 @@ if DOCKER:
     WORKDIR = '/app/'
 else:
     WORKDIR = 'c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering'
-    WORKDIR = '/Users/pabloruizruiz/twoDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
+    WORKDIR = '/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
 
 os.chdir(WORKDIR)
 print('WORKING DIRECTORY: ', WORKDIR)
@@ -40,14 +42,7 @@ logo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/BASF-Logo_bw.s
 ''' ---------------------------------- DATA ---------------------------------- '''
 
 images_basename = 'wordcloud_clusters'
-# words_df = pd.read_csv(
-#     JP(paths['results'], 'words_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
-# embeddings_df = pd.read_csv(
-#     JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.csv'.format(MIN_K,MAX_K)), index_col=0)
-# with open(JP(paths['results'], 'words_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
-#     words = pickle.load(f)
-# with open(JP(paths['results'], 'embeddings_per_cluster_{}_to_{}.pkl'.format(MIN_K,MAX_K)), 'rb') as f:
-#     embeddings = pickle.load(f)
+
 with open(JP(paths['results'], 'clustering.pkl'), 'rb') as f:
     results = pickle.load(f)
 
@@ -78,7 +73,7 @@ app.layout = html.Div([
                 html.Img(src=logo,
                      style={'max-width':'10%', 'max-height':'10%'})
             ], href='https://www.basf.com/es/es.html')
-        # html.H1('BASF')
+
     ], className = 'row', style={
         'backgroundColor':'green', 
         'text-align':'center', 
@@ -184,7 +179,31 @@ app.layout = html.Div([
 
         # RIGHT-HAND CHART --> WORDCLOUD
         html.Div([
-            html.Div([html.Img(id='wordclouds', src='')])
+            
+            html.Div([
+                # DROPDOWN: Number of cols ?
+                html.Div([
+                    # Titles
+                    html.Div(
+                        [html.P('Number of Columns')
+                    ], className='row'),
+                    # Dropdown
+                    html.Div([
+                        dcc.Dropdown(
+                        id='n_cols_dropwdown',
+                        options=[{'label': i, 'value': i} for i in K_VALUES],
+                        value=K_VALUES[0])
+                    ], className='row')
+
+                # ], className='rowk', style={'padding-bottom':'5px'}),
+                ], className='four columns', style={'margin-top':'5%', 'padding-left':'5%'}),
+
+            ], className='row'),
+
+            html.Div([
+                html.Div([html.Img(id='wordclouds', src='')])
+            ], className='row')
+
         ], className = 'six columns')
 
     ], className = 'row')
@@ -199,6 +218,7 @@ app.layout = html.Div([
 def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
     d = results[num_clusters][clust_alg][dim_red]['scatter']   
     d['cluster'] = d['cluster'].astype(str)
+    print(d['cluster'].value_counts())
     if viz_dim == 3:
         fig = px.scatter_3d(d, x='d1', y='d2', z='d3', color='cluster')
     else:
@@ -211,13 +231,31 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
     Output('wordclouds','src'),
     [Input('num_cluster_dropwdown', 'value'),
      Input('cluster_alg_dropwdown', 'value'),
-     Input('viz_dim_dropwdown', 'value'),
-     Input('dim_reduction_dropwdown', 'value')])
-def update_image_src(num_clusters, clust_alg, viz_dim, dim_red):
-    uri = JP(image_directory, images_basename + '_{}_{}_{}.png'.format(num_clusters, clust_alg, dim_red))
-    uri_base64 = base64.b64encode(open(uri, 'rb').read()).decode('ascii')
-    uri_base64 = 'data:image/png;base64,{}'.format(uri_base64)
-    return uri_base64
+     Input('dim_reduction_dropwdown', 'value'),
+     Input('n_cols_dropwdown', 'value')])
+def update_wordclouds(num_clusters, clust_alg, dim_red, n_cols):
+    # Filter data
+    d = results[num_clusters][clust_alg][dim_red]['wordclouds']
+    # Create the figure using pyplot
+    fig = plot_centroids_as_wordclouds(d, n_cols=n_cols, figsize=(5,5))
+    # fig.savefig(JP(paths['images'], 'test_{}_{}_{}.png'.format(num_clusters, clust_alg, dim_red)))
+    # Save it to a temporary buffer.
+    buf = BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    # Embed the result in the html output.
+    return 'data:image/png;base64,{}'.format(base64.b64encode(buf.read()).decode("ascii"))
+
+# @app.callback(
+#     Output('wordclouds','src'),
+#     [Input('num_cluster_dropwdown', 'value'),
+#      Input('cluster_alg_dropwdown', 'value'),
+#      Input('dim_reduction_dropwdown', 'value')])
+# def update_wordclouds(num_clusters, clust_alg, dim_red):
+#     uri = JP(image_directory, images_basename + '_{}_{}_{}.png'.format(num_clusters, clust_alg, dim_red))
+#     uri_base64 = base64.b64encode(open(uri, 'rb').read()).decode('ascii')
+#     uri_base64 = 'data:image/png;base64,{}'.format(uri_base64)
+#     return uri_base64
 
 
 if __name__ == '__main__':
