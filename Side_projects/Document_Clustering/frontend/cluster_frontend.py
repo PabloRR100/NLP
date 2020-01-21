@@ -50,6 +50,7 @@ with open(JP(paths['results'], 'clustering.pkl'), 'rb') as f:
 
 VIZ_DIMENSIONS = [2,3]
 K_VALUES = list(results.keys())
+WORDS_PER_VALUE = list(range(3,10))
 CLUST_METHODS = list(results[K_VALUES[0]].keys())
 DIM_REDUCTORS = list(results[K_VALUES[0]][CLUST_METHODS[0]].keys())
 # embeddings_df['num_clusters'] = embeddings_df['num_clusters'].apply(lambda x: str(x))
@@ -102,33 +103,34 @@ app.layout = html.Div([
                             # Title
                             html.Div(
                                 [html.P('Number of Clusters')
-                            ], className='six columns'),
+                            ], id='dropdown_1_text', className='six columns'),
                             # Dropdown
                             html.Div([
                                 dcc.Dropdown(
                                 id='num_cluster_dropwdown',
                                 options=[{'label': i, 'value': i} for i in K_VALUES],
                                 value=K_VALUES[0])
-                            ], className='four columns')
+                            ], id='dropdown_1_box', className='four columns')
 
-                        ], className='row', style={'padding-bottom':'5px'}), 
+                        ], id='dropdown_1', className='row', style={'padding-bottom':'5px'}), 
 
                         # DROPDOWN: Clustering method ? 
                         html.Div([
                             # Title
                             html.Div([
                                 html.P('Clustering method')
-                                ], className='six columns'),
+                                ], id='dropdown_2_text', className='six columns'),
                             # Dropdown
                             html.Div([
                                 dcc.Dropdown(
                                 id='cluster_alg_dropwdown',
                                 options=[{'label': i, 'value': i} for i in CLUST_METHODS],
                                 value=CLUST_METHODS[0])
-                            ], className='four columns')
-                        ], className='row', style={'padding-bottom':'5px'})  
+                            ], id='dropdown_2_box', className='four columns')
 
-                    ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'}),
+                        ], id='dropdown_2',  className='row', style={'padding-bottom':'5px'})  
+
+                    ], id='umap_dropdowns_1_and_2', className='six columns', style={'margin-top':'5%', 'padding-left':'5%'}),
 
                     # LEFT TOP HALF RIGHT HALF --> FIRST 2 DROPDOWN
                     html.Div([
@@ -169,42 +171,48 @@ app.layout = html.Div([
 
                         ], className='row', style={'padding-bottom':'5px'}), 
 
-                    ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'})
+                    ], id='umap_dropdowns_3_and_4', className='six columns', style={'margin-top':'5%', 'padding-left':'5%'})
 
-                ], className = 'row'),
+                ], id='umap_dropdown', className = 'row'),
 
                 # LEFT BOTTOM HALF --> SCATTER PLOT
                 html.Div([
                     dcc.Graph(id='umap')
-                ], className = 'row'),
+                ], id='umap_graph', className = 'row'),
 
             ], id='scatter_container', className = 'six columns'),
+
+            # RIGHT-HAND HALF --> BARPLOTS
+            html.Div([
+
+                # DROPDOWN: WORDS PER WORDCLOUD
+                html.Div([
+                    
+                    # TITLE
+                    html.Div(
+                        [html.P('Number of Columns')
+                    ], id='words_per_wordcloud_text', className='row'),
+                    
+                    # DROPDOWN
+                    html.Div([
+                        dcc.Dropdown(
+                        id='words_per_barplot_dropdown',
+                        options=[{'label': i, 'value': i} for i in WORDS_PER_VALUE],
+                        value=WORDS_PER_VALUE[3])
+                    ], id='words_per_wordcloud_box', className='row')
+
+                ], id='barplot_dropdown', className='four columns', style={'margin-top':'5%', 'padding-left':'5%'}),
+
+                html.Div([
+                    dcc.Graph(id='barplots')
+                ], id='barplot_graph', className = 'row'),
+
+            ], id='barplot_container', className='six columns'),
 
         ], id='scatter_barplot_container', className='row'),
 
         # SECOND PART WORDCLOUD
         html.Div([
-
-            # html.Div([
-            #     # DROPDOWN: Number of cols ?
-            #     html.Div([
-            #         # Titles
-            #         html.Div(
-            #             [html.P('Number of Columns')
-            #         ], id='', className='row'),
-                    
-            #         # Dropdown
-            #         html.Div([
-            #             dcc.Dropdown(
-            #             id='n_cols_dropwdown',
-            #             options=[{'label': i, 'value': i} for i in K_VALUES],
-            #             value=K_VALUES[0])
-            #         ], id='', className='row')
-
-            #     ], id='', className='four columns', style={'margin-top':'5%', 'padding-left':'5%'}),
-
-            # ], className='row'),
-
             html.Div([
                 html.Div([html.Img(id='wordclouds', src='')])
             ], className='row')
@@ -221,8 +229,11 @@ app.layout = html.Div([
      Input('viz_dim_dropwdown', 'value'),
      Input('dim_reduction_dropwdown', 'value')])
 def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
+    # Filter based on dropdown values
     d = results[num_clusters][clust_alg][dim_red]['scatter']   
+    # Convert Cluster to String to be treated as a Category
     d['cluster'] = d['cluster'].astype(str)
+    # Sanity check because UMAP has broken apparently
     print(d['cluster'].value_counts())
     if viz_dim == 3:
         fig = px.scatter_3d(d, x='d1', y='d2', z='d3', color='cluster')
@@ -231,6 +242,15 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
     fig.update_traces(marker=dict(size=3))
     fig.update_layout(title_text='Document embeddings', title_x=0.5, showlegend=False)
     return fig 
+
+
+@app.callback(
+    Output('barplots', 'figure'),
+    [Input('words_per_barplot_dropdown', 'value')])
+def update_barplot(words_per_value):
+    print('Im in!')
+    return 
+
 
 @app.callback(
     Output('wordclouds','src'),
@@ -251,6 +271,16 @@ def update_wordclouds(num_clusters, clust_alg, dim_red): #, n_cols):
     # Embed the result in the html output.
     return 'data:image/png;base64,{}'.format(base64.b64encode(buf.read()).decode("ascii"))
 
+if __name__ == '__main__':
+    app.run_server(host='0.0.0.0', debug=True)
+
+exit()
+
+
+
+# BACKUP CODE
+
+# When wordcloud were not computed on the fly
 # @app.callback(
 #     Output('wordclouds','src'),
 #     [Input('num_cluster_dropwdown', 'value'),
@@ -261,9 +291,3 @@ def update_wordclouds(num_clusters, clust_alg, dim_red): #, n_cols):
 #     uri_base64 = base64.b64encode(open(uri, 'rb').read()).decode('ascii')
 #     uri_base64 = 'data:image/png;base64,{}'.format(uri_base64)
 #     return uri_base64
-
-
-if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', debug=True)
-
-exit()
