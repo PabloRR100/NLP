@@ -236,8 +236,7 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
     d = results[num_clusters][clust_alg][dim_red]['scatter']   
     # Convert Cluster to String to be treated as a Category
     d['cluster'] = d['cluster'].astype(str)
-    # Sanity check because UMAP has broken apparently
-    # print(d['cluster'].value_counts())
+    # Different plot depending on the desired dimensions to display
     if viz_dim == 3:
         fig = px.scatter_3d(d, x='d1', y='d2', z='d3', color='cluster')
     else:
@@ -262,7 +261,6 @@ def update_barplot(num_clusters, clust_alg, dim_red, words_per_value):
         d_ = d[d['cluster'] == cluster].sort_values(by='score', ascending=False).head(words_per_value)
         fig.append_trace(go.Bar(x=d_['word'], y=d_['score'], orientation='v'), row=c+1, col=1)
     fig.update_layout(title_text='Word Importance')
-    print(d.columns)
     return fig
 
 
