@@ -110,7 +110,7 @@ app.layout = html.Div([
                                 id='num_cluster_dropwdown',
                                 options=[{'label': i, 'value': i} for i in K_VALUES],
                                 value=K_VALUES[0])
-                            ], id='dropdown_1_box', className='four columns')
+                            ], id='dropdown_1_box', className='six columns')
 
                         ], id='dropdown_1', className='row', style={'padding-bottom':'5px'}), 
 
@@ -125,8 +125,8 @@ app.layout = html.Div([
                                 dcc.Dropdown(
                                 id='cluster_alg_dropwdown',
                                 options=[{'label': i, 'value': i} for i in CLUST_METHODS],
-                                value=CLUST_METHODS[0])
-                            ], id='dropdown_2_box', className='four columns')
+                                value=CLUST_METHODS[1])
+                            ], id='dropdown_2_box', className='six columns')
 
                         ], id='dropdown_2',  className='row', style={'padding-bottom':'5px'})  
 
@@ -149,7 +149,7 @@ app.layout = html.Div([
                                 id='viz_dim_dropwdown',
                                 options=[{'label': i, 'value': i} for i in VIZ_DIMENSIONS],
                                 value=3)
-                            ], className='four columns')
+                            ], className='six columns')
 
                         ], className='row', style={'padding-bottom':'5px'}), 
 
@@ -159,15 +159,15 @@ app.layout = html.Div([
                             # Title
                             html.Div([
                                 html.P('Dim Reductor')
-                                ], className='six columns'),
+                            ], className='six columns'),
                             
                             # Dropdown
                             html.Div([
                                 dcc.Dropdown(
                                 id='dim_reduction_dropwdown',
                                 options=[{'label': i, 'value': i} for i in DIM_REDUCTORS],
-                                value=DIM_REDUCTORS[0])
-                            ], className='four columns')
+                                value=DIM_REDUCTORS[1])
+                            ], className='six columns')
 
                         ], className='row', style={'padding-bottom':'5px'}), 
 
@@ -190,7 +190,7 @@ app.layout = html.Div([
                     
                     # TITLE
                     html.Div(
-                        [html.P('Number of Columns')
+                        [html.P('Number of Words per Cluster')
                     ], id='words_per_wordcloud_text', className='six columns'),
                     
                     # DROPDOWN
@@ -248,12 +248,15 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
     Output('barplots', 'figure'),
     [Input('num_cluster_dropwdown', 'value'),
      Input('cluster_alg_dropwdown', 'value'),
+     Input('dim_reduction_dropwdown', 'value'),
      Input('words_per_barplot_dropdown', 'value')])
-def update_barplot(num_cluster, clust_alg, words_per_value):
-    print('Im in!')
+def update_barplot(num_clusters, clust_alg, dim_red, words_per_value):
     d = results[num_clusters][clust_alg][dim_red]['wordclouds']
+    d = d.sort_values(by='score', ascending=False).groupby('cluster').head(words_per_value)
+    fig = px.bar(d, x='word', y='score', facet_col='cluster', orientation='v', )
+    fig.update_layout(title_text='Word Importance')
     print(d.columns)
-    return 
+    return fig
 
 
 @app.callback(
