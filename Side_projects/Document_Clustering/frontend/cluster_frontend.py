@@ -191,7 +191,7 @@ app.layout = html.Div([
                     # TITLE
                     html.Div(
                         [html.P('Number of Columns')
-                    ], id='words_per_wordcloud_text', className='row'),
+                    ], id='words_per_wordcloud_text', className='six columns'),
                     
                     # DROPDOWN
                     html.Div([
@@ -199,9 +199,9 @@ app.layout = html.Div([
                         id='words_per_barplot_dropdown',
                         options=[{'label': i, 'value': i} for i in WORDS_PER_VALUE],
                         value=WORDS_PER_VALUE[3])
-                    ], id='words_per_wordcloud_box', className='row')
+                    ], id='words_per_wordcloud_box', className='six columns')
 
-                ], id='barplot_dropdown', className='four columns', style={'margin-top':'5%', 'padding-left':'5%'}),
+                ], id='barplot_dropdown', className='row', style={'margin':'40px'}),
 
                 html.Div([
                     dcc.Graph(id='barplots')
@@ -234,7 +234,7 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
     # Convert Cluster to String to be treated as a Category
     d['cluster'] = d['cluster'].astype(str)
     # Sanity check because UMAP has broken apparently
-    print(d['cluster'].value_counts())
+    # print(d['cluster'].value_counts())
     if viz_dim == 3:
         fig = px.scatter_3d(d, x='d1', y='d2', z='d3', color='cluster')
     else:
@@ -246,9 +246,13 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
 
 @app.callback(
     Output('barplots', 'figure'),
-    [Input('words_per_barplot_dropdown', 'value')])
-def update_barplot(words_per_value):
+    [Input('num_cluster_dropwdown', 'value'),
+     Input('cluster_alg_dropwdown', 'value'),
+     Input('words_per_barplot_dropdown', 'value')])
+def update_barplot(num_cluster, clust_alg, words_per_value):
     print('Im in!')
+    d = results[num_clusters][clust_alg][dim_red]['wordclouds']
+    print(d.columns)
     return 
 
 
