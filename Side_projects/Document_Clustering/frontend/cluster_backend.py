@@ -81,7 +81,7 @@ dim_reducters = [
     PCA(n_components=EMBED_SIZE, random_state=46),
     umap.UMAP(
         n_epochs=UMAP_EPOCHS, n_neighbors=5, 
-        n_components=EMBED_SIZE, metric='cosine', 
+        n_components=3, metric='cosine', 
         random_state=46, verbose=True)]
 
 clustering_methods = [

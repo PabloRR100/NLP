@@ -9,12 +9,14 @@ import pandas as pd
 from os.path import join as JP
 
 import dash
+import plotly
 import plotly.express as px
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
 import dash_core_components as dcc
 import dash_html_components as html
 from plotly.tools import mpl_to_plotly
+from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output
 
 DOCKER = os.environ.get('IM_IN_DOCKER', False)
@@ -166,7 +168,7 @@ app.layout = html.Div([
                                 dcc.Dropdown(
                                 id='dim_reduction_dropwdown',
                                 options=[{'label': i, 'value': i} for i in DIM_REDUCTORS],
-                                value=DIM_REDUCTORS[1])
+                                value=DIM_REDUCTORS[0])
                             ], className='six columns')
 
                         ], className='row', style={'padding-bottom':'5px'}), 
@@ -217,7 +219,8 @@ app.layout = html.Div([
                 html.Div([html.Img(id='wordclouds', src='')])
             ], className='row')
 
-        ], id='wordcloud_frame', className = 'row')
+        ], id='wordcloud_frame', className = 'row',
+            style={'text-align':'center', 'padding':'20px'})
 
     ], className = 'row')
 ])
@@ -252,8 +255,12 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
      Input('words_per_barplot_dropdown', 'value')])
 def update_barplot(num_clusters, clust_alg, dim_red, words_per_value):
     d = results[num_clusters][clust_alg][dim_red]['wordclouds']
-    d = d.sort_values(by='score', ascending=False).groupby('cluster').head(words_per_value)
-    fig = px.bar(d, x='word', y='score', facet_col='cluster', orientation='v', )
+    # Create subplots for each number of clusters option
+    fig = make_subplots(rows=num_clusters, cols=1)
+    # Populate each of the subplots, filtering by cluster, by score, and taking the N with smax scores
+    for c, cluster in enumerate(d['cluster'].unique()):
+        d_ = d[d['cluster'] == cluster].sort_values(by='score', ascending=False).head(words_per_value)
+        fig.append_trace(go.Bar(x=d_['word'], y=d_['score'], orientation='v'), row=c+1, col=1)
     fig.update_layout(title_text='Word Importance')
     print(d.columns)
     return fig
@@ -267,7 +274,7 @@ def update_barplot(num_clusters, clust_alg, dim_red, words_per_value):
     #  Input('n_cols_dropwdown', 'value')
 def update_wordclouds(num_clusters, clust_alg, dim_red): #, n_cols):
     # Filter data
-    d = results[num_clusters][clust_alg][dim_red]['wordclouds']
+    d = results[num_clusters][clust_alg][dim_red]['wordclouds'] 
     # Create the figure using pyplot
     fig = plot_centroids_as_wordclouds(d, n_cols=num_clusters, figsize=(10,5))
     # fig.savefig(JP(paths['images'], 'test_{}_{}_{}.png'.format(num_clusters, clust_alg, dim_red)))
@@ -282,8 +289,6 @@ if __name__ == '__main__':
     app.run_server(host='0.0.0.0', debug=True)
 
 exit()
-
-
 
 # BACKUP CODE
 

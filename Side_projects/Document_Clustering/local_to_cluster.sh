@@ -82,9 +82,8 @@ docker run --rm -dit \
     --name ${CONTAINER_NAME} \
     -e SERVING_PORT=8899 \
     -p 8899:8899 \
-    -p 8050:8050 \
     -v ${PWD}:${CONTAINER_ROOT} \
-    ${DOCKER_IMAGE} 
+    ${DOCKER_IMAGE} jupyter notebook --ip='0.0.0.0' --port=8899 --no-browser --allow-root --notebook-dir=/app
 
 docker logs ${CONTAINER_NAME}
 
