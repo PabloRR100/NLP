@@ -84,127 +84,132 @@ app.layout = html.Div([
     
     # BODY
     html.Div([
-        
-        # LEFT-HAND CHART --> SCATTER PLOT
+
+        # FIRST PART (SCATTER + BARPLOTS)
         html.Div([
-            
-            # LEFT TOP HALF --> 4 DROPDOWNS
+
+            # LEFT-HAND CHART --> SCATTER PLOT
             html.Div([
                 
-                # LEFT TOP HALF LEFT HALF --> FIRST 2 DROPDOWN
+                # LEFT TOP HALF --> 4 DROPDOWNS
                 html.Div([
                     
-                    # DROPDOWN: Number of clusters ?
+                    # LEFT TOP HALF LEFT HALF --> FIRST 2 DROPDOWN
                     html.Div([
-                        # Title
-                        html.Div(
-                            [html.P('Number of Clusters')
-                        ], className='six columns'),
-                        # Dropdown
+                        
+                        # DROPDOWN: Number of clusters ?
                         html.Div([
-                            dcc.Dropdown(
-                            id='num_cluster_dropwdown',
-                            options=[{'label': i, 'value': i} for i in K_VALUES],
-                            value=K_VALUES[0])
-                        ], className='four columns')
-
-                    ], className='row', style={'padding-bottom':'5px'}), 
-
-                    # DROPDOWN: Clustering method ? 
-                    html.Div([
-                        # Title
-                        html.Div([
-                            html.P('Clustering method')
+                            # Title
+                            html.Div(
+                                [html.P('Number of Clusters')
                             ], className='six columns'),
-                        # Dropdown
+                            # Dropdown
+                            html.Div([
+                                dcc.Dropdown(
+                                id='num_cluster_dropwdown',
+                                options=[{'label': i, 'value': i} for i in K_VALUES],
+                                value=K_VALUES[0])
+                            ], className='four columns')
+
+                        ], className='row', style={'padding-bottom':'5px'}), 
+
+                        # DROPDOWN: Clustering method ? 
                         html.Div([
-                            dcc.Dropdown(
-                            id='cluster_alg_dropwdown',
-                            options=[{'label': i, 'value': i} for i in CLUST_METHODS],
-                            value=CLUST_METHODS[0])
-                        ], className='four columns')
-                    ], className='row', style={'padding-bottom':'5px'})  
+                            # Title
+                            html.Div([
+                                html.P('Clustering method')
+                                ], className='six columns'),
+                            # Dropdown
+                            html.Div([
+                                dcc.Dropdown(
+                                id='cluster_alg_dropwdown',
+                                options=[{'label': i, 'value': i} for i in CLUST_METHODS],
+                                value=CLUST_METHODS[0])
+                            ], className='four columns')
+                        ], className='row', style={'padding-bottom':'5px'})  
 
-                ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'}),
+                    ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'}),
 
-                # LEFT TOP HALF RIGHT HALF --> FIRST 2 DROPDOWN
+                    # LEFT TOP HALF RIGHT HALF --> FIRST 2 DROPDOWN
+                    html.Div([
+                            
+                        # DROPDOWN: DIMESIONS TO VISUALIZE ? 
+                        html.Div([
+                            
+                            # Title
+                            html.Div([
+                                html.P('Plot Dimensions')
+                            ], className='six columns'),
+                            
+                            # Dropdown
+                            html.Div([
+                                dcc.Dropdown(
+                                id='viz_dim_dropwdown',
+                                options=[{'label': i, 'value': i} for i in VIZ_DIMENSIONS],
+                                value=3)
+                            ], className='four columns')
+
+                        ], className='row', style={'padding-bottom':'5px'}), 
+
+                        # DROPDOWN: DIM REDUCTOR? s
+                        html.Div([
+                            
+                            # Title
+                            html.Div([
+                                html.P('Dim Reductor')
+                                ], className='six columns'),
+                            
+                            # Dropdown
+                            html.Div([
+                                dcc.Dropdown(
+                                id='dim_reduction_dropwdown',
+                                options=[{'label': i, 'value': i} for i in DIM_REDUCTORS],
+                                value=DIM_REDUCTORS[0])
+                            ], className='four columns')
+
+                        ], className='row', style={'padding-bottom':'5px'}), 
+
+                    ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'})
+
+                ], className = 'row'),
+
+                # LEFT BOTTOM HALF --> SCATTER PLOT
                 html.Div([
-                        
-                    # DROPDOWN: DIMESIONS TO VISUALIZE ? 
-                    html.Div([
-                        
-                        # Title
-                        html.Div([
-                            html.P('Plot Dimensions')
-                        ], className='six columns'),
-                        
-                        # Dropdown
-                        html.Div([
-                            dcc.Dropdown(
-                            id='viz_dim_dropwdown',
-                            options=[{'label': i, 'value': i} for i in VIZ_DIMENSIONS],
-                            value=3)
-                        ], className='four columns')
+                    dcc.Graph(id='umap')
+                ], className = 'row'),
 
-                    ], className='row', style={'padding-bottom':'5px'}), 
+            ], id='scatter_container', className = 'six columns'),
 
-                    # DROPDOWN: DIM REDUCTOR? s
-                    html.Div([
-                        
-                        # Title
-                        html.Div([
-                            html.P('Dim Reductor')
-                            ], className='six columns'),
-                        
-                        # Dropdown
-                        html.Div([
-                            dcc.Dropdown(
-                            id='dim_reduction_dropwdown',
-                            options=[{'label': i, 'value': i} for i in DIM_REDUCTORS],
-                            value=DIM_REDUCTORS[0])
-                        ], className='four columns')
+        ], id='scatter_barplot_container', className='row'),
 
-                    ], className='row', style={'padding-bottom':'5px'}), 
-
-                ], className='six columns', style={'margin-top':'5%', 'padding-left':'5%'})
-
-            ], className = 'row'),
-
-            # LEFT BOTTOM HALF --> SCATTER PLOT
-            html.Div([
-                dcc.Graph(id='umap')
-            ], className = 'row'),
-        ], className = 'six columns'),
-
-
-        # RIGHT-HAND CHART --> WORDCLOUD
+        # SECOND PART WORDCLOUD
         html.Div([
-            
-            html.Div([
-                # DROPDOWN: Number of cols ?
-                html.Div([
-                    # Titles
-                    html.Div(
-                        [html.P('Number of Columns')
-                    ], className='row'),
-                    # Dropdown
-                    html.Div([
-                        dcc.Dropdown(
-                        id='n_cols_dropwdown',
-                        options=[{'label': i, 'value': i} for i in K_VALUES],
-                        value=K_VALUES[0])
-                    ], className='row')
 
-                # ], className='rowk', style={'padding-bottom':'5px'}),
-                ], className='four columns', style={'margin-top':'5%', 'padding-left':'5%'}),
+            # html.Div([
+            #     # DROPDOWN: Number of cols ?
+            #     html.Div([
+            #         # Titles
+            #         html.Div(
+            #             [html.P('Number of Columns')
+            #         ], id='', className='row'),
+                    
+            #         # Dropdown
+            #         html.Div([
+            #             dcc.Dropdown(
+            #             id='n_cols_dropwdown',
+            #             options=[{'label': i, 'value': i} for i in K_VALUES],
+            #             value=K_VALUES[0])
+            #         ], id='', className='row')
 
-            ], className='row'),
+            #     ], id='', className='four columns', style={'margin-top':'5%', 'padding-left':'5%'}),
+
+            # ], className='row'),
 
             html.Div([
                 html.Div([html.Img(id='wordclouds', src='')])
             ], className='row')
 
-        ], className = 'six columns')
+        ], id='wordcloud_frame', className = 'row')
 
     ], className = 'row')
 ])
@@ -231,13 +236,13 @@ def update_umap(num_clusters, clust_alg, viz_dim, dim_red):
     Output('wordclouds','src'),
     [Input('num_cluster_dropwdown', 'value'),
      Input('cluster_alg_dropwdown', 'value'),
-     Input('dim_reduction_dropwdown', 'value'),
-     Input('n_cols_dropwdown', 'value')])
-def update_wordclouds(num_clusters, clust_alg, dim_red, n_cols):
+     Input('dim_reduction_dropwdown', 'value')])
+    #  Input('n_cols_dropwdown', 'value')
+def update_wordclouds(num_clusters, clust_alg, dim_red): #, n_cols):
     # Filter data
     d = results[num_clusters][clust_alg][dim_red]['wordclouds']
     # Create the figure using pyplot
-    fig = plot_centroids_as_wordclouds(d, n_cols=n_cols, figsize=(5,5))
+    fig = plot_centroids_as_wordclouds(d, n_cols=num_clusters, figsize=(10,5))
     # fig.savefig(JP(paths['images'], 'test_{}_{}_{}.png'.format(num_clusters, clust_alg, dim_red)))
     # Save it to a temporary buffer.
     buf = BytesIO()
