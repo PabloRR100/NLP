@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dash
+  labels:
+    deployment: dash
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      pod: dash
+  template:
+    metadata:
+      labels:
+        pod: dash
+    spec:
+
+      containers:
+        - name: dash
+          image: pablorr10/betcomm-dash:dev
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+
+            # Kind of deployment
+            - name: DEPLOYMENT
+              value: minikube
+
+            # dash Env Variables
+            - name: dash_SU_NAME
+              value: pablorr10
+
+            - name: dash_SU_EMAIL
+              value: pablorr10@gmail.com
+
+            - name: dash_SU_PASSWORD
+              value: pppp
+
+            # mongo Env Variables
+            - name: mongo_USER
+              value: pablominikube
+
+            - name: mongo_PASSWORD
+              value: password
+
+            - name: mongo_DB
+              value: betcomm-dev
+
+            - name: mongo_HOST
+              value: mongo-service
+
+      initContainers:
+
+        - name: init-mongo-service
+          image: busybox
+          command: ['sh', '-c', 'until nslookup mongo-service; do echo waiting for mongo-service; sleep 2; done;']
+        
+        - name: init-dash-service
+          image: busybox
+          command: ['sh', '-c', 'until nslookup dash-service; do echo waiting for dash-service; sleep 2; done;']
+  

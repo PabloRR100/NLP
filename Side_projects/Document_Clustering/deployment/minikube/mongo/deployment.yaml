@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-container
+
+  template:
+    metadata:
+      labels:
+        app: mongo-container
+        tier: backend
+
+    spec:
+      
+      containers:
+
+        - name: mongo-container
+          image: mongo:10.10
+          imagePullPolicy: Always
+          
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-h", "localhost", "-d", "betcomm-dev", "-U", "pablominikube"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+
+          readinessProbe:
+            exec:
+              command: ["psql", "-d", "betcomm-dev", "-U", "pablominikube", "SELECT 1"]
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 1
+
+          env:
+
+            - name: mongo_USER
+              value: pablominikube
+
+            - name: mongo_PASSWORD
+              value: password
+
+            - name: mongo_DB
+              value: betcomm-dev
+
+            - name: PG_DATA
+              value: home/mongoql/data
+
+          ports:
+            - containerPort: 5432
+
+          volumeMounts:
+
+            # Mount in mongo POD /var/lib/mongoql/data folde what I have in /data/mongo-pv local folder
+            - name: mongo-data-volume-mount
+              mountPath: home/mongoql/data  # Trying this because /var/ seems to raise permision issues
+              # mountPath: /var/lib/mongoql/data:z # Added :z for permision purposes
+
+            # Mount in mongo POD /home folde what I have in Betcomm/database local folder
+            - name: mongo-home 
+              mountPath: /home
+
+      volumes:
+
+        - name: mongo-data-volume-mount
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+
+        - name: mongo-home
+          persistentVolumeClaim:
+            claimName: mongo-pvc-2
+          

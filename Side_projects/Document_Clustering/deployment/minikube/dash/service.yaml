@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: dash-service
+spec:
+  selector:
+    # We need to say not every appllication running on port 8000
+    # but only the one running on the pod associated with the dash app
+    pod: dash
+  ports:
+  - protocol: TCP
+    port: 8000 # This changes if its not local
+    targetPort: 8000
+  type: NodePort
+# type: LoadBalancer --> Also this

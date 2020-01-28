@@ -1,0 +1,38 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-pv
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 2Gi
+  storageClassName: standard
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    # path: /data/mongo-pv   # I don't think this is really doing anything since I don't have this in my local
+    path: /Users/pabloruizruiz/Library/Application Support/mongo/var-10
+    # path: /Users/pabloruizruiz/Library/Application\ Support/mongo/var-10
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-pv-2
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 2Gi
+  storageClassName: standard
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /Users/pabloruizruiz/OneDrive/Proyectos/Betcomm/database # This will mount database files into /home/ dir in the mongo Pod
+    # path: /data/mongo-pv-2
+    # A hostPath PersistentVolume uses a file or directory on the Node to emulate network-attached storage
+    # A hostPath volume mounts a file or directory from the host node's file system into your pod.
+    # A hostPath PersistentVolume must be used only in a single-node cluster.
+    # Value: the location of the file or directory on your cluster's node.
+    # path: /Users/pabloruizruiz/Library/Application Support/mongo/var-10:z
+    # In a production cluster, you would not use hostPath. Instead a cluster administrator would provision a network resource

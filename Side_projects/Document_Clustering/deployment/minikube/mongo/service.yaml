@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: mongo-service
+spec:
+  selector:
+    app: mongo-container
+  ports:
+  - name: psql
+    protocol: TCP
+    port: 5432
+    targetPort: 5432
+  type: ClusterIP
+

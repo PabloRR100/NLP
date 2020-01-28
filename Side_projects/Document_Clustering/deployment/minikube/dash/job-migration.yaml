@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dash-migrations
+spec:
+  template:
+    spec:
+      containers:
+        - name: dash
+          image: pablorr10/betcomm-dash:dev
+          imagePullPolicy: Always
+          env:
+            - name: DEPLOYMENT
+              value: minikube
+
+            - name: mongo_USER
+              value: pablominikube
+
+            - name: mongo_PASSWORD
+              value: password
+
+            - name: mongo_HOST
+              value: mongo-service
+
+            - name: mongo_DB
+              value: betcomm-dev
+
+          command: ['python', 'manage.py', 'migrate']
+
+      initContainers:
+        - name: wait-for-dash1
+          image: busybox
+          command: ['sh', '-c', 'until nslookup mongo-service; do echo waiting for mongo-service; sleep 2; done;']
+
+        - name: wait-for-dash2
+          image: busybox
+          command: ['sh', '-c', 'until nslookup dash-service; do echo waiting for dash-service; sleep 2; done;']
+
+      restartPolicy: Never
+  backoffLimit: 5
