@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from typing import List, Tuple              # What is this for?
 from collections import namedtuple
-from typing import List, Tuple
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.nn.utils
+import torch.nn.functional as F
 from model_embeddings import ModelEmbeddings
 
 Hypothesis = namedtuple('Hypothesis', ['value', 'score'])

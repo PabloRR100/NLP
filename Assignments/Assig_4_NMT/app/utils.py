@@ -3,7 +3,6 @@
 
 
 import math
-
 import numpy as np
 
 
@@ -17,11 +16,12 @@ def pad_sents(sents, pad_token):
         each sentences in the batch now has equal length.
     """
     sents_padded = []
-
+    longest_sentece_len = np.max(list(map(len,sentences)))
+    for sent in sents:
+        len_diff = (longest_sentece_len - len(sent))
+        sents_padded.append(sent + [pad_token] * len_diff)
     ### YOUR CODE HERE (~6 Lines)
-
     ### END YOUR CODE
-
     return sents_padded
 
 

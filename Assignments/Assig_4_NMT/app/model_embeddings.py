@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import torch.nn as nn
+from vocab import Vocab
 
 
 class ModelEmbeddings(nn.Module):
@@ -9,7 +10,7 @@ class ModelEmbeddings(nn.Module):
     Class that converts input words to their embeddings.
     """
 
-    def __init__(self, embed_size, vocab):
+    def __init__(self, embed_size: int, vocab: Vocab):
         """
         Init the Embedding layers.
 
@@ -46,3 +47,5 @@ class ModelEmbeddings(nn.Module):
         ###         https://pytorch.org/docs/stable/nn.html#torch.nn.Embedding
 
         ### END YOUR CODE
+        self.source = vocab.src
+        self.target = vocab.tgt
