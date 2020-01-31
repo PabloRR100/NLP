@@ -6,9 +6,8 @@ spec:
   selector:
     app: mongo-container
   ports:
-  - name: psql
+  - name: mongo
     protocol: TCP
-    port: 5432
-    targetPort: 5432
+    port: 5000
+    targetPort: 5000
   type: ClusterIP
-

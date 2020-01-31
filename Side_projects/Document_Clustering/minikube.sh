@@ -1,6 +1,6 @@
 
-export CONTAINER_NAME=nlpminimal
-export DOCKER_IMAGE=pablorr10/nlp:minimal
+export CONTAINER_NAME=nlp_mongo_dash
+export DOCKER_IMAGE=pablorr10/nlp:mongo_dash
 
 export CONTAINER_ROOT=/app
 # export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
@@ -26,12 +26,10 @@ docker push ${DOCKER_IMAGE}
 
 # Deploy mongo and dash
 kubectl create -f deployment/minikube/mongo
-kubectl exec -it <mongo_pod> -- psql -d betcomm-dev -f home/database/test_db.sql
-kubectl exec -it <mongo_pod> -- psql -U pablominikube -d betcomm-dev --command='SELECT * FROM "<sample_db>"'
+kubectl exec -it <mongo_pod> -- mongo -d app-dev -f home/database/test_db.sql
+kubectl exec -it <mongo_pod> -- mongo -U pablominikube -d app-dev --command='SELECT * FROM "<sample_db>"'
 
 kubectl create -f deployment/minikube/dash/
-
-
 
 # # Launch Service
 minikube service dash-service
@@ -40,4 +38,4 @@ minikube service dash-service
 # kubectl create -f deployment/minikube/dash/job-migration.yaml
 # kubectl get pods | grep Error | cut -d' ' -f 1 | xargs kubectl delete pod
 
-# psql -d betcomm-db-dev -U pablominikube
+# mongo -d app-db-dev -U pablominikube

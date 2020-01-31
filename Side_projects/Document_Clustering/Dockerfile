@@ -17,7 +17,7 @@ ENV IM_IN_DOCKER Yes
 ENV PROJECT_ROOT /app
 ENV CLUSTER_DATA /data
 ENV NLTK_DATA=$PROJECT_ROOT/data/nltk_data  
-ENV SERVING_PORT=8889s
+ENV SERVING_PORT=8888
 
 WORKDIR $PROJECT_ROOT
 
@@ -26,11 +26,14 @@ RUN pip install -r requirements.txt
 RUN sudo -H rm requirements.txt
 
 # Mongo
+EXPOSE 5000
 EXPOSE 8081 
+EXPOSE 27017
 # Dash
 EXPOSE 8050
 # Jupyter
 EXPOSE 8888
+EXPOSE ${SERVING_PORT}
 
 RUN cat /etc/*-release
 RUN pip install https://github.com/scikit-learn-contrib/scikit-learn-extra/archive/master.zip

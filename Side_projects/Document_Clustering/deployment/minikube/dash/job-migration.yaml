@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: dash
-          image: pablorr10/betcomm-dash:dev
+          image: pablorr10/app-dash:dev
           imagePullPolicy: Always
           env:
             - name: DEPLOYMENT
@@ -23,7 +23,7 @@ spec:
               value: mongo-service
 
             - name: mongo_DB
-              value: betcomm-dev
+              value: app-dev
 
           command: ['python', 'manage.py', 'migrate']
 

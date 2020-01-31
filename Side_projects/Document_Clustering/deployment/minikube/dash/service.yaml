@@ -9,7 +9,7 @@ spec:
     pod: dash
   ports:
   - protocol: TCP
-    port: 8000 # This changes if its not local
-    targetPort: 8000
+    port: 8050 # This changes if its not local
+    targetPort: 8050
   type: NodePort
 # type: LoadBalancer --> Also this

@@ -20,39 +20,36 @@ spec:
       containers:
 
         - name: mongo-container
-          image: mongo:10.10
+          image: mongo:4.2.3
           imagePullPolicy: Always
           
-          livenessProbe:
-            exec:
-              command: ["pg_isready", "-h", "localhost", "-d", "betcomm-dev", "-U", "pablominikube"]
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
+          # livenessProbe:
+          #   exec:
+          #     command: ["pg_isready", "-h", "localhost", "-d", "app-dev", "-U", "pablominikube"]
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
 
-          readinessProbe:
-            exec:
-              command: ["psql", "-d", "betcomm-dev", "-U", "pablominikube", "SELECT 1"]
-            initialDelaySeconds: 5
-            periodSeconds: 2
-            timeoutSeconds: 1
+          # readinessProbe:
+          #   exec:
+          #     command: ["mongo", "-d", "app-dev", "-U", "pablominikube", "SELECT 1"]
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 2
+          #   timeoutSeconds: 1
 
           env:
 
-            - name: mongo_USER
+            - name: MONGO_INITDB_ROOT_USERNAME
               value: pablominikube
 
-            - name: mongo_PASSWORD
+            - name: MONGO_INITDB_ROOT_PASSWORD
               value: password
 
-            - name: mongo_DB
-              value: betcomm-dev
-
-            - name: PG_DATA
-              value: home/mongoql/data
+            - name: MONGO_INITDB_DATABASE
+              value: app-test
 
           ports:
-            - containerPort: 5432
+            - containerPort: 5000
 
           volumeMounts:
 
@@ -61,7 +58,7 @@ spec:
               mountPath: home/mongoql/data  # Trying this because /var/ seems to raise permision issues
               # mountPath: /var/lib/mongoql/data:z # Added :z for permision purposes
 
-            # Mount in mongo POD /home folde what I have in Betcomm/database local folder
+            # Mount in mongo POD /home folde what I have in app/database local folder
             - name: mongo-home 
               mountPath: /home
 

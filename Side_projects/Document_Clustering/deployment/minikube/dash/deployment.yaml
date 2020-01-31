@@ -17,37 +17,37 @@ spec:
 
       containers:
         - name: dash
-          image: pablorr10/betcomm-dash:dev
+          image: pablorr10/nlp:mongo_dash
           imagePullPolicy: Always
           ports:
-            - containerPort: 8000
+            - containerPort: 8050
           env:
 
             # Kind of deployment
             - name: DEPLOYMENT
               value: minikube
 
-            # dash Env Variables
-            - name: dash_SU_NAME
-              value: pablorr10
+            # # dash Env Variables
+            # - name: SU_NAME
+            #   value: pablorr10
 
-            - name: dash_SU_EMAIL
-              value: pablorr10@gmail.com
+            # - name: SU_EMAIL
+            #   value: pablo.ruiz@basf.com
 
-            - name: dash_SU_PASSWORD
-              value: pppp
+            # - name: SU_PASSWORD
+            #   value: pppp
 
             # mongo Env Variables
-            - name: mongo_USER
+            - name: MONGO_USER
               value: pablominikube
 
-            - name: mongo_PASSWORD
+            - name: MONGO_PASSWORD
               value: password
 
-            - name: mongo_DB
-              value: betcomm-dev
+            - name: MONGO_DB
+              value: app-test
 
-            - name: mongo_HOST
+            - name: MONGO_HOST
               value: mongo-service
 
       initContainers:
