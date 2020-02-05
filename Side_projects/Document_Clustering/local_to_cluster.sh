@@ -14,6 +14,7 @@ export EXCLUDE_SYNC_FILE="exclude_sync.txt"
 # Push to remote
 rsync -auv -e "ssh -i ${KEY_PATH}" \
     --exclude-from=${EXCLUDE_SYNC_FILE} \
+    --delete \
     $LOCAL_PROJECT_PATH ${SSH_USER}@${SSH_HOST}:$REMOTE_PROJECT_PATH
 
 # SSH Connect
@@ -31,16 +32,17 @@ ssh -i $KEY_PATH \
 # Using Docker in Host
 # ---------------------
 
-export DOCKER_PORT=8999
-export CLUSTER_PORT=18999
+export DOCKER_PORT=8899
+export CLUSTER_PORT=18899
 export DOCKER_PORT_2=8050
 export CLUSTER_PORT_2=8050
 
-export DOCKER_IMAGE=pablorr10/nlp:minimal_mongo
-export CONTAINER_NAME=nlp_minimal_mongo
+export DOCKER_IMAGE=pablorr10/nlp:minimal
+export CONTAINER_NAME=side_nlp_minimal
 
 # export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
-export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
+# export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
+export CLUSTER_ROOT=${PWD}
 export CONTAINER_ROOT=/app
 
 export CLUSTER_DATA=/datadrive/madrid
@@ -53,13 +55,13 @@ docker run --rm -dit \
     --name ${CONTAINER_NAME} \
     -e SERVING_PORT=${DOCKER_PORT} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
-    -v ${PWD}:${CONTAINER_ROOT} \
-    ${DOCKER_IMAGE} jupyter notebook --ip='0.0.0.0' --port=8999 --no-browser --allow-root --notebook-dir=${PROJECT_ROOT}
+    -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \
+    ${DOCKER_IMAGE} 
+    
     # -p ${CLUSTER_PORT_2}:${DOCKER_PORT_2} \
     # -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
+    #jupyter notebook --ip='0.0.0.0' --port=8999 --no-browser --allow-root --notebook-dir=${PROJECT_ROOT}
     
-    jupyter contrib nbextension install --user # Rebuild image
-
 docker logs ${CONTAINER_NAME}
 
 docker exec -it ${CONTAINER_NAME} bash

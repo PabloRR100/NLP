@@ -1,6 +1,6 @@
 .git
-.gitignore
-Notebooks__Cluster
-media
-*__pycache__
 *.pyc
+.gitignore
+*__pycache__
+Notebooks__Cluster
+.ipynb_checkpoints

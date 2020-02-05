@@ -1,0 +1,21 @@
+
+paths: 
+    data: data/
+    catalog: data/catalog/
+    results: data/results/clustering
+
+params:
+    general:
+        MIN_K: 2
+        MAX_K: 10
+        EMBED_SIZE: 50
+    umap:
+        epochs: 50
+        metric: cosine
+        n_neighbors: 5
+        n_components: 3
+        min_cluster_size: 50
+
+    
+
+    
