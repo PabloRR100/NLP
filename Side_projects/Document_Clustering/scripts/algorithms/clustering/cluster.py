@@ -14,10 +14,9 @@ from os.path import join as JP
 from collections import defaultdict
 
 ''' System Configuration '''
-local = 'c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering'
 local = '/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
+local = 'c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering'
 DOCKER = os.environ.get('IM_IN_DOCKER', False) 
-DOCKER = True # TODO: Hardcoded now because image is broken and it doesn't have this ENV variable yet
 WORKDIR = '/app/' if DOCKER else local
 
 os.chdir(WORKDIR)
@@ -31,7 +30,7 @@ import umap
 from sklearn.decomposition import PCA
 from scripts.preprocessing.catalog import load_catalog
 from utils.general import parse_yaml, defaultdict_to_dict
-from scripts.algorithms.clustering import kmeans_clustering, kmedoids_clustering
+from scripts.algorithms.clustering.utils import kmeans_clustering, kmedoids_clustering
 
 ''' 0 - Conf '''
 
