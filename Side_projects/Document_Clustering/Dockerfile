@@ -1,15 +1,18 @@
 
-FROM jupyter/minimal-notebook
+FROM jupyter/minimal-notebook 
+#:7a0c7325e470
 USER root
 
+# RUN apt-get update && apt-get install -yq --no-install-recommends \
+RUN sudo apt-get clean
+RUN sudo apt-get autoclean
+RUN sudo apt-get update && sudo apt-get upgrade
 RUN sudo -H apt-get update \
     && apt-get install -y \
         git \
-        zip \
         sudo \
         nano \
         htop \
-        unzip \
         apt-utils \
     && rm -rf /var/lib/apt/lists/*
 

@@ -36,8 +36,8 @@ export CLUSTER_PORT=18999
 export DOCKER_PORT_2=8050
 export CLUSTER_PORT_2=8050
 
-export DOCKER_IMAGE=pablorr10/nlp:minimal
-export CONTAINER_NAME=nlpminimal
+export DOCKER_IMAGE=pablorr10/nlp:minimal_mongo
+export CONTAINER_NAME=nlp_minimal_mongo
 
 # export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
 export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering
@@ -48,13 +48,14 @@ export CONTAINER_DATA=${CONTAINER_ROOT}/globaldata
 
 # Open a shell in the container
 docker stop ${CONTAINER_NAME} || true
+docker rm ${CONTAINER_NAME} || true
 docker run --rm -dit \
     --name ${CONTAINER_NAME} \
     -e SERVING_PORT=${DOCKER_PORT} \
     -p ${CLUSTER_PORT}:${DOCKER_PORT} \
-    -p ${CLUSTER_PORT_2}:${DOCKER_PORT_2} \
-    -v ${CLUSTER_ROOT}:${CONTAINER_ROOT} \s
-    ${DOCKER_IMAGE} 
+    -v ${PWD}:${CONTAINER_ROOT} \
+    ${DOCKER_IMAGE} jupyter notebook --ip='0.0.0.0' --port=8999 --no-browser --allow-root --notebook-dir=${PROJECT_ROOT}
+    # -p ${CLUSTER_PORT_2}:${DOCKER_PORT_2} \
     # -v ${CLUSTER_DATA}:${CONTAINER_DATA} \
     
     jupyter contrib nbextension install --user # Rebuild image
@@ -69,6 +70,13 @@ export LOCAL_DIR="/mnt/c/Users/RUIZP4/Documents/DOCS/Pablo_Personal/StanfordNLP/
 
 scp -i ${KEY_PATH} \
     -r ${SSH_USER}@${SSH_HOST}:${REMOTE_DIR} ${LOCAL_DIR}
+
+
+# On BASF Laptop
+# --------------
+docker stop nlp_test || true
+docker run --rm -dit --name nlp_test -e SERVING_PORT=8899 -p 8899:8899 pablorr10/nlp:minimal 
+# jupyter notebook --ip='0.0.0.0' --port=8899 --no-browser --allow-root --notebook-dir=/app
 
 
 # On my MAC
