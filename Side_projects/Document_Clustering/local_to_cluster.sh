@@ -37,8 +37,8 @@ export CLUSTER_PORT=18899
 export DOCKER_PORT_2=8050
 export CLUSTER_PORT_2=8050
 
-export DOCKER_IMAGE=pablorr10/nlp:minimal
-export CONTAINER_NAME=side_nlp_minimal
+export DOCKER_IMAGE=pablorr10/nlp:minimal_mongo
+export CONTAINER_NAME=side_minimal_v2
 
 # export CLUSTER_ROOT=/home/pablo/Side_NLP_Tests/Document_Clustering
 # export CLUSTER_ROOT=/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering

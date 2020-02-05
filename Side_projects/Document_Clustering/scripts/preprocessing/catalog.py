@@ -6,8 +6,14 @@ import json
 import base64
 from os.path import join as JP
 from os.path import abspath, pardir
-curdir = os.getcwd()
-sys.path.append(abspath(JP(pardir,curdir)))
+
+local = '/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
+DOCKER = os.environ.get('IM_IN_DOCKER', False) 
+WORKDIR = '/app/' if DOCKER else local
+sys.path.append(WORKDIR)
+sys.path.append(JP(WORKDIR,'utils'))
+sys.path.append(JP(WORKDIR,'scripts'))
+print('PATH: ', sys.path)
 # -------------------------------------------
 
 
