@@ -36,15 +36,19 @@ class NMT(nn.Module):
         self.dropout_rate = dropout_rate
         self.vocab = vocab
 
-        # default values
-        self.encoder = None
-        self.decoder = None
-        self.h_projection = None
-        self.c_projection = None
-        self.att_projection = None
-        self.combined_output_projection = None
-        self.target_vocab_projection = None
-        self.dropout = None
+        self.encoder = nn.LSTM(
+            input_size=self.embed_size, hidden_size=self.hidden_size, 
+            bias=True, birectional=True)
+
+        self.decoder = nn.LSTMCell(
+            input_size=self.embed_size, hidden_size=self.hidden_size, bias=True)
+
+        self.h_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False)
+        self.c_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False)
+        self.att_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False)
+        self.combined_output_projection = nn.Linear(3*self.hidden_size, self.hidden_size, bias=False)
+        self.target_vocab_projection = nn.Linear(hidden_size, len(self.vocab))
+        self.dropout = nn.Dropout(p=self.dropout_rate)
 
         ### YOUR CODE HERE (~8 Lines)
         ### TODO - Initialize the following variables:
@@ -117,6 +121,7 @@ class NMT(nn.Module):
                                         b = batch_size, src_len = maximum source sentence length. Note that 
                                        these have already been sorted in order of longest to shortest sentence.
         @param source_lengths (List[int]): List of actual lengths for each of the source sentences in the batch
+        
         @returns enc_hiddens (Tensor): Tensor of hidden units with shape (b, src_len, h*2), where
                                         b = batch size, src_len = maximum source sentence length, h = hidden size.
         @returns dec_init_state (tuple(Tensor, Tensor)): Tuple of tensors representing the decoder's initial
