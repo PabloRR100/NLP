@@ -34,16 +34,18 @@ sys.path.append(JP(WORKDIR,'scripts'))
 
 from utils.general import parse_yaml, ensure_directories
 from scripts.algorithms.clustering import plot_centroids_as_wordclouds
+
+
 config = parse_yaml('config.yaml')
 paths = config['paths']
 image_directory = paths['images']
-logo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/BASF-Logo_bw.svg/1280px-BASF-Logo_bw.svg.png'
 
 
 
 ''' ---------------------------------- DATA ---------------------------------- '''
 
 images_basename = 'wordcloud_clusters'
+logo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/BASF-Logo_bw.svg/1280px-BASF-Logo_bw.svg.png'
 
 with open(JP(paths['results'], 'clustering.pkl'), 'rb') as f:
     results = pickle.load(f)
