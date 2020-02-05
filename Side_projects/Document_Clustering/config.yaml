@@ -1,11 +1,14 @@
 paths: 
     data: data/
     images: images/
-    results: results/
+    results: data/results/
     catalog: data/catalog
     documents: data/documents
     checkpoints: checkpoints/
     stopwords: data/stopwords/
+
+config_files:
+    clustering: scripts/algorithm/clustering/config_cluster.yml
 
 topic: isocyanate
 classes: [relevant, irrelevant]
