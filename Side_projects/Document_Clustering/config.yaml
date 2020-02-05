@@ -8,7 +8,7 @@ paths:
     stopwords: data/stopwords/
 
 config_files:
-    clustering: scripts/algorithm/clustering/config_cluster.yml
+    clustering: scripts/algorithms/clustering/config_cluster.yml
 
 topic: isocyanate
 classes: [relevant, irrelevant]

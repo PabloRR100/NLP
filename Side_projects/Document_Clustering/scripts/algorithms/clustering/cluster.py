@@ -35,7 +35,7 @@ from scripts.algorithms.clustering.utils import kmeans_clustering, kmedoids_clus
 ''' 0 - Conf '''
 
 config_file = parse_yaml('config.yaml')  # A config map
-config = parse_yaml(config_file)
+config = parse_yaml(config_file['config_files']['clustering'])
 paths = config['paths']
 
 
