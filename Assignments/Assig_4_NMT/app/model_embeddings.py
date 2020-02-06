@@ -21,9 +21,8 @@ class ModelEmbeddings(nn.Module):
         super(ModelEmbeddings, self).__init__()
         self.embed_size = embed_size
 
-        # default values
-        self.source = None
-        self.target = None
+        self.source = nn.Embedding(len(vocab.src), self.embed_size)
+        self.target = nn.Embedding(len(vocab.tgt), self.embed_size) 
 
         src_pad_token_idx = vocab.src['<pad>']
         tgt_pad_token_idx = vocab.tgt['<pad>']
@@ -47,5 +46,3 @@ class ModelEmbeddings(nn.Module):
         ###         https://pytorch.org/docs/stable/nn.html#torch.nn.Embedding
 
         ### END YOUR CODE
-        self.source = vocab.src
-        self.target = vocab.tgt

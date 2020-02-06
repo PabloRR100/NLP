@@ -96,10 +96,12 @@ def question_1d_sanity_check(model, src_sents, tgt_sents, vocab):
                         enc_hiddens_pred.numpy())), "enc_hiddens is incorrect: it should be:\n {} but is:\n{}".format(
         enc_hiddens_target, enc_hiddens_pred)
     print("enc_hiddens Sanity Checks Passed!")
+
     assert (np.allclose(dec_init_state_target[0].numpy(), dec_init_state_pred[
         0].numpy())), "dec_init_state[0] is incorrect: it should be:\n {} but is:\n{}".format(dec_init_state_target[0],
                                                                                               dec_init_state_pred[0])
     print("dec_init_state[0] Sanity Checks Passed!")
+
     assert (np.allclose(dec_init_state_target[1].numpy(), dec_init_state_pred[
         1].numpy())), "dec_init_state[1] is incorrect: it should be:\n {} but is:\n{}".format(dec_init_state_target[1],
                                                                                               dec_init_state_pred[1])
@@ -199,7 +201,8 @@ def question_1f_sanity_check(model, src_sents, tgt_sents, vocab):
 def main():
     """ Main func.
     """
-    args = docopt(__doc__)
+    # args = docopt(__doc__)
+    args = {'1d': False, '1e': False, '1f': True}
 
     # Check Python & PyTorch Versions
     assert (sys.version_info >= (3, 5)), "Please update your installation of Python to version >= 3.5"
@@ -243,4 +246,5 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()
