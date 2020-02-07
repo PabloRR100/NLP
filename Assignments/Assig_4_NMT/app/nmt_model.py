@@ -254,6 +254,7 @@ class NMT(nn.Module):
         ###         where tgt_len = maximum target sentence length, b = batch size, h = hidden size.
         return combined_outputs
 
+    # x, h_tm1, exp_src_encodings, exp_src_encodings_att_linear, enc_masks=None
     def step(self, Ybar_t: torch.Tensor,
              dec_state: Tuple[torch.Tensor, torch.Tensor],
              enc_hiddens: torch.Tensor,
@@ -295,18 +296,21 @@ class NMT(nn.Module):
         dec_hidden, dec_cell = dec_state                                    # (BS, h), (BS, h)
         dec_hidden = dec_hidden.unsqueeze(dim=2)                            # (BS, h, 1)
         e_t = torch.bmm(enc_hiddens_proj, dec_hidden)                       # (BS, S, 1)        
-        e_t = e_t.squeeze()                                                 # (BS, S)  
+
+        # Squeeze e_t --> alpha_t will be of shape (b,src_len)
+        e_t = e_t.squeeze(dim=2)                                            # (BS, S)  
   
         # Set e_t to -inf where enc_masks has 1
         if enc_masks is not None:
             e_t.data.masked_fill_(enc_masks.bool(), -float('inf'))
 
+        enc_hiddens = enc_hiddens.permute(0,2,1)                            # ()
         alpha_t = nn.functional.softmax(e_t, dim=1)                         # (BS, S)
         alpha_t = alpha_t.unsqueeze(dim=2)                                  # (BS, S, 1)
-        a_t = torch.bmm(enc_hiddens.permute(0,2,1), alpha_t)                # (BS, 2h, 1)
+        a_t = torch.bmm(enc_hiddens, alpha_t)                               # (BS, 2h, 1)
         
-        a_t = a_t.squeeze()                                                 # (BS, 2h)
-        dec_hidden = dec_hidden.squeeze()                                   # (BS, h)
+        a_t = a_t.squeeze(dim=2)                                                 # (BS, 2h)
+        dec_hidden = dec_hidden.squeeze(dim=2)                                   # (BS, h)
 
         u_t = torch.cat((a_t, dec_hidden), dim=1)                           # (BS, 3h)
         v_t = self.combined_output_projection(u_t)                          # (BS, h)
@@ -382,8 +386,8 @@ class NMT(nn.Module):
 
             x = torch.cat([y_t_embed, att_tm1], dim=-1)
 
-            (h_t, cell_t), att_t, _ = self.step(x, h_tm1,
-                                                exp_src_encodings, exp_src_encodings_att_linear, enc_masks=None)
+            (h_t, cell_t), att_t, _ = self.step(
+                x, h_tm1, exp_src_encodings, exp_src_encodings_att_linear, enc_masks=None)
 
             # log probabilities over target words
             log_p_t = F.log_softmax(self.target_vocab_projection(att_t), dim=-1)

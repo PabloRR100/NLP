@@ -319,6 +319,17 @@ def main():
     """ Main func.
     """
     args = docopt(__doc__)
+    # args = {
+    #     'train': False, 
+    #     'decode': True,
+    #     'MODEL_PATH': 'model.bin',
+    #     'TEST_SOURCE_FILE': './en_es_data/test.es',
+    #     'TEST_TARGET_FILE': './en_es_data/test.en',
+    #     'OUTPUT_FILE': 'outputs/test_outputs.txt', 
+    #     '--seed': '45',
+    #     '--cuda': False,
+    #     '--beam-size': '1',
+    #     '--max-decoding-time-step': 100000}
 
     # Check pytorch version
     assert (

@@ -5,3 +5,5 @@
 *.pyc
 .vscode
 **/globaldata/
+*.bin
+*.optim
