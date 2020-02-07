@@ -1,4 +1,5 @@
 #!/bin/bash
+''' Git simulation to syncronize local developement into cluster '''
  
 # Preparing environment in Host
 # ------------------------------

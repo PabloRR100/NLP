@@ -1,5 +1,6 @@
 #!/bin/bash
- 
+''' Automatically run a docker container configured '''
+
 helpFunction()
 {
     echo ""
@@ -107,36 +108,11 @@ docker exec -it ${CONTAINER_NAME} bash
 echo "[INFO]: Exiting..."
 exit
 
-# Usage
+
+
+
+############ Usage ############
+
 sh cluster_docker.sh -n test_nlp -p 8888 
 
-
-
-# On BASF Laptop
-# --------------
-docker stop nlp_test || true
-docker run --rm -dit --name nlp_test -e SERVING_PORT=8899 -p 8899:8899 pablorr10/nlp:minimal 
-# jupyter notebook --ip='0.0.0.0' --port=8899 --no-browser --allow-root --notebook-dir=/app
-
-
-# On my MAC
-# ---------
-
-export DOCKER_IMAGE=pablorr10/nlp:minimal
-export CONTAINER_NAME=nlpdash
-export CONTAINER_ROOT=/app
-
-docker run --rm -dit \
-     --name ${CONTAINER_NAME} \
-     -e SERVING_PORT=8899 \
-     -p 8899:8899 \
-     -v ${PWD}:${CONTAINER_ROOT} \
-     ${DOCKER_IMAGE} jupyter notebook --ip='0.0.0.0' --port=8899 --no-browser --allow-root --notebook-dir=/app
-
-docker logs ${CONTAINER_NAME}
-
-docker exec -dit ${CONTAINER_NAME} python frontend/cluster_frontend.py
-docker logs ${CONTAINER_NAME}
-
-docker exec -it ${CONTAINER_NAME} bash
 
