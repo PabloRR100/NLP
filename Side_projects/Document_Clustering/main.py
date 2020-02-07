@@ -23,20 +23,31 @@ from scripts.catalog import (
     Catalog, Document, Corpus,
     load_catalog, load_corpus)
 
-docker = os.environ.get('AM_I_IN_A_DOCKER_CONTAINER', False)
-if docker: 
-    print('I am inside a docker container')
-    workdir = '/app/'
-else: 
-    print('I am running locally')
-    workdir = 'c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering'
-    workdir = '/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
+''' System Configuration '''
+local = '/Users/pabloruizruiz/OneDrive/Courses/NLP_Stanford/Side_projects/Document_Clustering/'
+local = 'c:\\Users\\RUIZP4\\Documents\\DOCS\\Pablo_Personal\\StanfordNLP\\Side_projects\\Document_Clustering'
+DOCKER = os.environ.get('IM_IN_DOCKER', False) 
+WORKDIR = '/app/' if DOCKER else local
+
+os.chdir(WORKDIR)
+print('WORKING DIRECTORY: ', WORKDIR)
+sys.path.append(WORKDIR)
+sys.path.append(JP(WORKDIR,'utils'))
+sys.path.append(JP(WORKDIR,'scripts'))
+
 
 tqdm.pandas()
-os.chdir(workdir)
+os.chdir(WORKDIR)
 catalog = Catalog()
 config = parse_yaml('config.yaml')
 paths = config['paths']
+
+
+print('Testing Docker')
+print(paths)
+print('Exiting')
+exit()
+
 
 
 # CONFIG

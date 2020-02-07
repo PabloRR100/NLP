@@ -1,4 +1,5 @@
-
+#!/bin/bash
+ 
 # Preparing environment in Host
 # ------------------------------
 
@@ -10,23 +11,32 @@ export KEY_PATH="/mnt/c/Users/RUIZP4/Documents/DOCS/RnD/id_rsa_BASF_RnD"
 export LOCAL_PROJECT_PATH="/mnt/c/Users/RUIZP4/Documents/DOCS/Pablo_Personal/StanfordNLP/Side_projects/Document_Clustering"
 export REMOTE_PROJECT_PATH="/home/pablo/Side_NLP_Tests/"
 export EXCLUDE_SYNC_FILE="exclude_sync.txt"
-
-# Push to remote
-rsync -auv -e "ssh -i ${KEY_PATH}" \
+ 
+if [ $0 = "push" ]
+then
+    # Push to remote
+    echo "[INFO]: Pusing changes into cluster..."
+    rsync -auv -e "ssh -i ${KEY_PATH}" \
     --exclude-from=${EXCLUDE_SYNC_FILE} \
     --delete \
     $LOCAL_PROJECT_PATH ${SSH_USER}@${SSH_HOST}:$REMOTE_PROJECT_PATH
-
-# SSH Connect
-ssh -i ${KEY_PATH} ${SSH_USER}@${SSH_HOST}
-
-# Open LocalForwarding on the Background
-ssh -i $KEY_PATH \
+ 
+elif [ $0 = "port_forwarding"]
+then
+    # Open LocalForwarding on the Background
+    echo "[INFO]: Opening port forwarding..."
+    ssh -i $KEY_PATH \
+    -fNL 8050:127.0.0.1:18050 \
     -fNL 8889:127.0.0.1:18889 \
     -fNL 8899:127.0.0.1:18899 \
     -fNL 8999:127.0.0.1:18999 \
     -fNL 9999:127.0.0.1:19999 \
-    pablo@10.99.195.149
+    ${SSH_USER}@${SSH_HOST}
+
+else
+    # SSH Connect
+    ssh -i ${KEY_PATH} ${SSH_USER}@${SSH_HOST}
+fi
 
     
 # Using Docker in Host
