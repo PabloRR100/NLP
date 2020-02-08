@@ -133,26 +133,26 @@ class NMT(nn.Module):
         """
 
         # Prepare input
-        X = self.model_embeddings.source(source_padded)
-        # Pack the sequence to feed all the inputs into 1 pass and avoid for loop
-        X_packed = pack_padded_sequence(X, source_lengths, batch_first=False)
+        X = self.model_embeddings.source(source_padded)                                             # (S,BS,h)
+        # Pack the sequence to feed all the inputs into 1 pass and avoid for loop   
+        X_packed = pack_padded_sequence(X, source_lengths, batch_first=False)                       # Packed (S,h), .bactch_sizes
         
         # Apply encoder to X
-        enc_hiddens, (last_hidden, last_cell) = self.encoder(X_packed)
+        enc_hiddens, (last_hidden, last_cell) = self.encoder(X_packed)                              # (2,BS,h)
         # Unpack back the output 
-        enc_hiddens = pad_packed_sequence(enc_hiddens, batch_first=True)
+        enc_hiddens = pad_packed_sequence(enc_hiddens, batch_first=True)                            # 
         # Extract index 0 from the returned tuple and Permute dimensions to put the batch first
-        enc_hiddens = enc_hiddens[0] #.permute(1,0,2)
+        enc_hiddens = enc_hiddens[0] #.permute(1,0,2)                                               # (BS,S,2*h)
         
         # Compute the initial state of the decoder
 
-        t_ = last_hidden.view(last_hidden.size(1),-1) # TODO: Why was this one wrong?
-        h_ = torch.cat((last_hidden[0,:,:], last_hidden[1,:,:]), dim=1)
-        c_ = torch.cat((last_cell[0,:,:], last_cell[1,:,:]), dim=1)
+        t_ = last_hidden.view(last_hidden.size(1),-1)                                               # (BS,2*h)
+        h_ = torch.cat((last_hidden[0,:,:], last_hidden[1,:,:]), dim=1)                             # (BS,2*h)
+        c_ = torch.cat((last_cell[0,:,:], last_cell[1,:,:]), dim=1)                                 # (BS,2*h)
 
-        init_decoder_hidden = self.h_projection(h_)
-        init_decoder_cell = self.c_projection(c_)
-        dec_init_state = (init_decoder_hidden, init_decoder_cell)
+        init_decoder_hidden = self.h_projection(h_)                                                 # (BS,h)
+        init_decoder_cell = self.c_projection(c_)                                                   # (BS,h)
+        dec_init_state = (init_decoder_hidden, init_decoder_cell)                                   # ((BS,h),(BS,h))
 
         def encap_code():
             ### YOUR CODE HERE (~ 8 Lines)
@@ -219,10 +219,11 @@ class NMT(nn.Module):
         # Initialize a list we will use to collect the combined output o_t on each step
         combined_outputs = []
 
-        enc_hiddens_proj = self.att_projection(enc_hiddens)         # TODO: Why enc_hiddens is comming with dim=3 not 6 !??
+        enc_hiddens_proj = self.att_projection(enc_hiddens)
         y_true = self.model_embeddings.target(target_padded)
 
         # For every time step in the true output sentence 
+        # self.step() is a LSTMCell so we need a loop to iterate over all input at each t
         for y_t in torch.split(y_true, split_size_or_sections=1, dim=0):
         
             y_t = y_t.squeeze(0)
@@ -304,17 +305,6 @@ class NMT(nn.Module):
         if enc_masks is not None:
             e_t.data.masked_fill_(enc_masks.bool(), -float('inf'))
 
-        enc_hiddens = enc_hiddens.permute(0,2,1)                            # ()
-        alpha_t = nn.functional.softmax(e_t, dim=1)                         # (BS, S)
-        alpha_t = alpha_t.unsqueeze(dim=2)                                  # (BS, S, 1)
-        a_t = torch.bmm(enc_hiddens, alpha_t)                               # (BS, 2h, 1)
-        
-        a_t = a_t.squeeze(dim=2)                                                 # (BS, 2h)
-        dec_hidden = dec_hidden.squeeze(dim=2)                                   # (BS, h)
-
-        u_t = torch.cat((a_t, dec_hidden), dim=1)                           # (BS, 3h)
-        v_t = self.combined_output_projection(u_t)                          # (BS, h)
-        o_t = self.dropout(torch.tanh(v_t))                                     # (BS, h)
         ###     1. Apply softmax to e_t to yield alpha_t
         ###     2. Use batched matrix multiplication between alpha_t and enc_hiddens to obtain the
         ###         attention output vector, a_t.
@@ -326,6 +316,18 @@ class NMT(nn.Module):
         ###     3. Concatenate a_t with dec_hidden compute tensor U_t
         ###     4. Apply the combined output projection layer to U_t to compute tensor V_t
         ###     5. Compute tensor O_t by first applying the Tanh function and then the dropout layer.
+        enc_hiddens = enc_hiddens.permute(0,2,1)                                # ()
+        alpha_t = nn.functional.softmax(e_t, dim=1)                             # (BS, S)
+        alpha_t = alpha_t.unsqueeze(dim=2)                                      # (BS, S, 1)
+        a_t = torch.bmm(enc_hiddens, alpha_t)                                   # (BS, 2h, 1)
+        
+        a_t = a_t.squeeze(dim=2)                                                 # (BS, 2h)
+        dec_hidden = dec_hidden.squeeze(dim=2)                                   # (BS, h)
+
+        u_t = torch.cat((a_t, dec_hidden), dim=1)                               # (BS, 3h)
+        v_t = self.combined_output_projection(u_t)                              # (BS, h)
+        o_t = self.dropout(torch.tanh(v_t))                                     # (BS, h)
+
         combined_output = o_t
         return dec_state, combined_output, e_t
 
