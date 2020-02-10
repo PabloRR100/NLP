@@ -30,5 +30,3 @@ net2.beam_search(x)[0].value
 
 
 
-
-

@@ -20,12 +20,10 @@ class ModelEmbeddings(nn.Module):
         """
         super(ModelEmbeddings, self).__init__()
         self.embed_size = embed_size
-
-        self.source = nn.Embedding(len(vocab.src), self.embed_size)
-        self.target = nn.Embedding(len(vocab.tgt), self.embed_size) 
-
         src_pad_token_idx = vocab.src['<pad>']
         tgt_pad_token_idx = vocab.tgt['<pad>']
+        self.source = nn.Embedding(len(vocab.src), self.embed_size, padding_idx=src_pad_token_idx)
+        self.target = nn.Embedding(len(vocab.tgt), self.embed_size, padding_idx=tgt_pad_token_idx) 
 
         ### YOUR CODE HERE (~2 Lines)
         ### TODO - Initialize the following variables:
