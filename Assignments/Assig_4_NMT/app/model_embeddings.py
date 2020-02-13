@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import torch.nn as nn
-from vocab import Vocab
+# from vocab import Vocab
 
 
 class ModelEmbeddings(nn.Module):
@@ -10,7 +10,7 @@ class ModelEmbeddings(nn.Module):
     Class that converts input words to their embeddings.
     """
 
-    def __init__(self, embed_size: int, vocab: Vocab):
+    def __init__(self, embed_size, vocab):
         """
         Init the Embedding layers.
 
@@ -31,7 +31,7 @@ class ModelEmbeddings(nn.Module):
         ###     self.target (Embedding Layer for target langauge)
         ###
         ### Note:
-        ###     1. `vocab` object contains two vocabularies:
+        ###     1. `vocab` object contains t fn wo vocabularies:
         ###            `vocab.src` for source
         ###            `vocab.tgt` for target
         ###     2. You can get the length of a specific vocabulary by running:
