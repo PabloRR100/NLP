@@ -22,22 +22,34 @@ def pad_sents_char(sents, char_pad_token):
     """
     # Words longer than 21 characters should be truncated
     max_word_length = 21 
+    batch_size = len(sents)
+    max_len = max(len(s) for s in sents)
 
-    ### YOUR CODE HERE for part 1b
-    ### TODO:
-    ###     Perform necessary padding to the sentences in the batch similar to the pad_sents() 
-    ###     method below using the padding character from the arguments. You should ensure all 
-    ###     sentences have the same number of words and each word has the same number of 
-    ###     characters. 
-    ###     Set padding words to a `max_word_length` sized vector of padding characters.  
-    ###
-    ###     You should NOT use the method `pad_sents()` below because of the way it handles 
-    ###     padding and unknown words.
+    def pad_trunc_word(word):
+        if len(word) < max_word_length:
+            return word + [char_pad_token]*(max_word_length - len(word))
+        elif len(word) > max_word_length:
+            return word[:max_word_length]
+        return word
+    
+    def pad_sentences(sents):
+        sents_padded = []
+        for s in sents:
+            sent = [[char_pad_token]*(max_word_length) for _ in range(max_len)]
+            sent[:(len(s))] = s
 
+            for i,w in enumerate(sent[:(len(s))]):
+                sent[i] = pad_trunc_word(w)
+            sents_padded.append(sent)
+        return sents_padded
+        
+    sents_padded = pad_sentences(sents)
 
-    ### END YOUR CODE
-
+    # Ensuer all sentences have the same n of words and each word has the same n of characters. 
+    assert all([len(s) == max_len for s in sents]), 'Not all sentences have the same lenght'
+    assert all([all([len(s) == max_word_length for w in s]) for s in sents]), 'Not all words have the same lenght'
     return sents_padded
+
 
 
 def pad_sents(sents, pad_token):
