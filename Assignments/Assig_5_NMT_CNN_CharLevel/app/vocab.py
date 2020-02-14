@@ -142,13 +142,10 @@ class VocabEntry(object):
 
         @returns sents_var: tensor of (max_sentence_length, batch_size, max_word_length)
         """
-        ### YOUR CODE HERE for part 1c
-        ### TODO: 
-        ###     Connect `words2charindices()` and `pad_sents_char()` which you've defined in 
-        ###     previous parts
-        
-
-        ### END YOUR CODE
+        charIdx = self.words2charindices(sents)
+        paddedCharIdx = pad_sents_char(charIdx)
+        input_tensor = torch.Tensor(paddedCharIdx, device=device).permute(1,0,2)
+        return input_tensor
 
     def to_input_tensor(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
         """ Convert list of sentences (words) into tensor with necessary padding for 
@@ -237,35 +234,25 @@ class Vocab(object):
         return 'Vocab(source %d words, target %d words)' % (len(self.src), len(self.tgt))
 
 
-# # Own Debugging
-# args = {
-#     '--train-src': './en_es_data/train_tiny.es',
-#     '--train-tgt': './en_es_data/train_tiny.en',
-#     '--size': 200,
-#     '--freq-cutoff':1,
-#     'VOCAB_FILE': 'vocab_tiny_q1.json'}
+# Own Debugging
+args = {
+    '--train-src': './en_es_data/train_tiny.es',
+    '--train-tgt': './en_es_data/train_tiny.en',
+    '--size': 200,
+    '--freq-cutoff':1,
+    'VOCAB_FILE': 'vocab_tiny_q1.json'}
 
-# src_sents = read_corpus(args['--train-src'], source='src')
-# tgt_sents = read_corpus(args['--train-tgt'], source='tgt')
-# vocab = Vocab.build(src_sents, tgt_sents, int(args['--size']), int(args['--freq-cutoff']))
+src_sents = read_corpus(args['--train-src'], source='src')
+tgt_sents = read_corpus(args['--train-tgt'], source='tgt')
+vocab = Vocab.build(src_sents, tgt_sents, int(args['--size']), int(args['--freq-cutoff']))
 
-# sentences = [
-#     ['Me', 'gustan', 'los', 'coches'],
-#     ['Me', 'gustan', 'la', 'historia']
-# ]
+sentences = [
+    ['Me', 'gustan', 'los', 'coches'],
+    ['Me', 'gustan', 'la', 'historia']
+]
 
-# parse_sents = []
-# for s in sentences:
-#     sent = []
-#     for w in s:
-#         word = []
-#         word.append(vocab.src.start_of_word)
-#         word += [vocab.src.char2id[c] for c in w]
-#         word.append(vocab.src.end_of_word)
-#         sent.append(word)
-#     parse_sents.append(sent)
-
-
+device = 'cpu'
+vocab.src.to_input_tensor_char(sentences, device)
 
 if __name__ == '__main__':
     
