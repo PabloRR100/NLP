@@ -45,11 +45,10 @@ def pad_sents_char(sents, char_pad_token):
         
     sents_padded = pad_sentences(sents)
 
-    # Ensuer all sentences have the same n of words and each word has the same n of characters. 
-    assert all([len(s) == max_len for s in sents]), 'Not all sentences have the same lenght'
-    assert all([all([len(s) == max_word_length for w in s]) for s in sents]), 'Not all words have the same lenght'
+    # Ensuer all sentences have the same n of words and each word has the same n of characters
+    assert all([len(s) == max_len for s in sents_padded]), 'Not all sentences have the same lenght'
+    assert all([[len(w) == max_word_length for w in s] for s in sents_padded]), 'Not all words have the same lenght'
     return sents_padded
-
 
 
 def pad_sents(sents, pad_token):
