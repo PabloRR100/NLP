@@ -234,25 +234,25 @@ class Vocab(object):
         return 'Vocab(source %d words, target %d words)' % (len(self.src), len(self.tgt))
 
 
-# Own Debugging
-args = {
-    '--train-src': './en_es_data/train_tiny.es',
-    '--train-tgt': './en_es_data/train_tiny.en',
-    '--size': 200,
-    '--freq-cutoff':1,
-    'VOCAB_FILE': 'vocab_tiny_q1.json'}
+# # Own Debugging
+# args = {
+#     '--train-src': './en_es_data/train_tiny.es',
+#     '--train-tgt': './en_es_data/train_tiny.en',
+#     '--size': 200,
+#     '--freq-cutoff':1,
+#     'VOCAB_FILE': 'vocab_tiny_q1.json'}
 
-src_sents = read_corpus(args['--train-src'], source='src')
-tgt_sents = read_corpus(args['--train-tgt'], source='tgt')
-vocab = Vocab.build(src_sents, tgt_sents, int(args['--size']), int(args['--freq-cutoff']))
+# src_sents = read_corpus(args['--train-src'], source='src')
+# tgt_sents = read_corpus(args['--train-tgt'], source='tgt')
+# vocab = Vocab.build(src_sents, tgt_sents, int(args['--size']), int(args['--freq-cutoff']))
 
-sentences = [
-    ['Me', 'gustan', 'los', 'coches'],
-    ['Me', 'gustan', 'la', 'historia']
-]
+# sentences = [
+#     ['Me', 'gustan', 'los', 'coches'],
+#     ['Me', 'gustan', 'la', 'historia']
+# ]
 
-device = 'cpu'
-vocab.src.to_input_tensor_char(sentences, device)
+# device = 'cpu'
+# vocab.src.to_input_tensor_char(sentences, device)
 
 if __name__ == '__main__':
     

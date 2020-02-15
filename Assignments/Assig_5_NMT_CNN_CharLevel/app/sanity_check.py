@@ -211,7 +211,9 @@ def question_2d_sanity_check(decoder):
 def main():
     """ Main func.
     """
-    args = docopt(__doc__)
+    # args = docopt(__doc__)
+    args = {'1a': False, '1b': False, '1f': True}
+
 
     # Check Python & PyTorch Versions
     assert (sys.version_info >= (3, 5)), "Please update your installation of Python to version >= 3.5"

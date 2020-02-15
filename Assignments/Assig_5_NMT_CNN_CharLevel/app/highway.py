@@ -6,13 +6,13 @@ import numpy as np
 import torch.nn as nn
 
 
-class HighwayNet(nn.Module):
+class Highway(nn.Module):
     '''
     Args:
         embed_size: word embedding dimensionality 
     '''
-    def __init__(self, embed_size, bias=True):
-        super(HighwayNet, self).__init__()
+    def __init__(self, embed_size=50, bias=True):
+        super(Highway, self).__init__()
         self.W_proj = nn.Linear(embed_size, embed_size, bias=bias)
         self.W_gate = nn.Linear(embed_size, embed_size, bias=bias)
 
@@ -48,10 +48,9 @@ if __name__ == '__main__':
     # print('x_gate: ', x_gate)
     # print('x_highway: ', x_high)
 
-    net = HighwayNet(3, bias=False)
+    net = Highway(3, bias=False)
     net.W_proj.weight = nn.Parameter(torch.Tensor(W_proj))
     net.W_gate.weight = nn.Parameter(torch.Tensor(W_gate))
     x = torch.Tensor(input_x)
     net(x)
 
-    

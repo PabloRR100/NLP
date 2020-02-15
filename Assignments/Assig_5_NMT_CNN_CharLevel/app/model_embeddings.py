@@ -2,17 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import torch.nn as nn
+from cnn import CNN
+from highway import Highway
 
-
-# Do not change these imports; your module names should be
-#   `CNN` in the file `cnn.py`
-#   `Highway` in the file `highway.py`
-# Uncomment the following two imports once you're ready to run part 1(f)
-
-# from cnn import CNN
-# from highway import Highway
-
-# End "do not change" 
+CNN_KERNEL = 5
+CHAR_EMBED = 50
 
 class ModelEmbeddings(nn.Module):
     """
@@ -24,17 +18,14 @@ class ModelEmbeddings(nn.Module):
         Init the Embedding layer for one language
         @param embed_size (int): Embedding size (dimensionality) for the output 
         @param vocab (VocabEntry): VocabEntry object. See vocab.py for documentation.
+        # pad_token_idx = vocab.src['<pad>']
         """
         super(ModelEmbeddings, self).__init__()
-
-        ## A4 code
-        # pad_token_idx = vocab.src['<pad>']
-        # self.embeddings = nn.Embedding(len(vocab.src), embed_size, padding_idx=pad_token_idx)
-        ## End A4 code
-
-        ### YOUR CODE HERE for part 1f
-
-        ### END YOUR CODE
+        self.vocab = vocab
+        self.embeddings = nn.Embedding(len(vocab.id2char), CHAR_EMBED)  #, padding_idx=pad_token_idx)
+        self.cnn = CNN(in_channels=CHAR_EMBED, out_channels=embed_size, kernel_size=CNN_KERNEL)
+        self.highway = Highway()
+        self.dropout = nn.Dropout(p=0.3)
 
     def forward(self, input):
         """
@@ -45,11 +36,17 @@ class ModelEmbeddings(nn.Module):
         @param output: Tensor of shape (sentence_length, batch_size, embed_size), containing the 
             CNN-based embeddings for each word of the sentences in the batch
         """
-        ## A4 code
-        # output = self.embeddings(input)
-        # return output
-        ## End A4 code
-
-        ### YOUR CODE HERE for part 1f
-
-        ### END YOUR CODE
+        # Move the BS first
+        print('input: ', input.shape)
+        input = input.permute(1,0,2)
+        print('input: ', input.shape)
+        x_emb = self.embeddings(input)                  # (BS, embbed, max_word_len)
+        print('x_emb: ', x_emb.shape)       
+        # TODO: Understand why this doesn't alter the result
+        x_reshaped = x_emb.view(x_emb.shape[0], -1)     # (BS, embbed * max_word)
+        print('x_reshaped: ', x_reshaped.shape)
+        x_conv = self.cnn(x_reshaped)                   # (BS, embed_size)
+        print('x_conv: ', x_conv.shape)
+        x_high = self.highway(x_conv)                   # (BS, embed_size)
+        print('x_high: ', x_high.shape)
+        return self.dropout(x_high)
