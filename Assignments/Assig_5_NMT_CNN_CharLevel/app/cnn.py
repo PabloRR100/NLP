@@ -13,4 +13,6 @@ class CNN(nn.Module):
         self.pool = nn.MaxPool1d(kernel_size=in_channels) # We want only the max-over-time right?
 
     def forward(self, x):
-        return nn.functional.relu(self.pool(self.conv(x)))
+        x = self.conv(x)
+        x = self.pool(x)
+        return nn.functional.relu(x)

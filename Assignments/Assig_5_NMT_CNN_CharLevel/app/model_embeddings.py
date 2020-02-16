@@ -23,7 +23,7 @@ class ModelEmbeddings(nn.Module):
         super(ModelEmbeddings, self).__init__()
         self.vocab = vocab
         self.embeddings = nn.Embedding(len(vocab.id2char), CHAR_EMBED)  #, padding_idx=pad_token_idx)
-        self.cnn = CNN(in_channels=CHAR_EMBED, out_channels=embed_size, kernel_size=CNN_KERNEL)
+        self.cnn = CNN(in_channels=CHAR_EMBED*21, out_channels=embed_size, kernel_size=CNN_KERNEL)
         self.highway = Highway()
         self.dropout = nn.Dropout(p=0.3)
 
@@ -40,10 +40,11 @@ class ModelEmbeddings(nn.Module):
         print('input: ', input.shape)
         input = input.permute(1,0,2)
         print('input: ', input.shape)
-        x_emb = self.embeddings(input)                  # (BS, embbed, max_word_len)
+        x_emb = self.embeddings(input)                                  # (BS, sent_len, embbed, max_word_len)
         print('x_emb: ', x_emb.shape)       
         # TODO: Understand why this doesn't alter the result
-        x_reshaped = x_emb.view(x_emb.shape[0], -1)     # (BS, embbed * max_word)
+        x_reshaped = x_emb.view(x_emb.shape[0],x_emb.shape[1], -1)      # (BS, sent_len, embbed * max_word)
+        x_reshaped = x_reshaped.permute(0,2,1)                          # (BS, embbed * max_word, sent_len)
         print('x_reshaped: ', x_reshaped.shape)
         x_conv = self.cnn(x_reshaped)                   # (BS, embed_size)
         print('x_conv: ', x_conv.shape)
