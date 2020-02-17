@@ -11,6 +11,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
         self.conv = nn.Conv1d(in_channels, out_channels, kernel_size)
         self.pool = nn.MaxPool1d(kernel_size=in_channels) # We want only the max-over-time right?
+        self.pool2 = nn.MaxPool2d(kernel_size=in_channels) # We want only the max-over-time right?
 
     def forward(self, x):
         x = self.conv(x)

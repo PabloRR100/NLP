@@ -23,7 +23,7 @@ class ModelEmbeddings(nn.Module):
         super(ModelEmbeddings, self).__init__()
         self.vocab = vocab
         self.embeddings = nn.Embedding(len(vocab.id2char), CHAR_EMBED)  #, padding_idx=pad_token_idx)
-        self.cnn = CNN(in_channels=CHAR_EMBED*21, out_channels=embed_size, kernel_size=CNN_KERNEL)
+        self.cnn = CNN(in_channels=CHAR_EMBED, out_channels=embed_size, kernel_size=CNN_KERNEL)
         self.highway = Highway()
         self.dropout = nn.Dropout(p=0.3)
 
@@ -37,17 +37,18 @@ class ModelEmbeddings(nn.Module):
             CNN-based embeddings for each word of the sentences in the batch
         """
         # Move the BS first
+        print('input: ', input.shape)                               # (sent_len, BS, max_word_len)
+        input = input.permute(1,0,2)                                # (BS, sent_len, max_word_len)
         print('input: ', input.shape)
-        input = input.permute(1,0,2)
-        print('input: ', input.shape)
-        x_emb = self.embeddings(input)                                  # (BS, sent_len, embbed, max_word_len)
+        x_emb = self.embeddings(input)                              # (BS, sent_len, max_word_len, e_char)
         print('x_emb: ', x_emb.shape)       
+        x_reshaped = x_emb.permute(0,1,3,2)                         # (BS, sent_len embbed, max_word,  e_char)
         # TODO: Understand why this doesn't alter the result
-        x_reshaped = x_emb.view(x_emb.shape[0],x_emb.shape[1], -1)      # (BS, sent_len, embbed * max_word)
-        x_reshaped = x_reshaped.permute(0,2,1)                          # (BS, embbed * max_word, sent_len)
+        x_reshaped = x_reshaped.view(-1, *x_reshaped.shape[1:])     # (BS * sent_len, max_word, e_char)
         print('x_reshaped: ', x_reshaped.shape)
-        x_conv = self.cnn(x_reshaped)                   # (BS, embed_size)
+        x_conv = self.cnn(x_reshaped)                               # (BS, e_char)
         print('x_conv: ', x_conv.shape)
-        x_high = self.highway(x_conv)                   # (BS, embed_size)
+        x_high = self.highway(x_conv)                               # (BS, e_char)
         print('x_high: ', x_high.shape)
         return self.dropout(x_high)
+                                  
