@@ -12,22 +12,11 @@ class CharDecoder(nn.Module):
         @param char_embedding_size (int): dimensionality of character embeddings
         @param target_vocab (VocabEntry): vocabulary for the target language. See vocab.py for documentation.
         """
-        ### YOUR CODE HERE for part 2a
-        ### TODO - Initialize as an nn.Module.
-        ###      - Initialize the following variables:
-        ###        self.charDecoder: LSTM. Please use nn.LSTM() to construct this.
-        ###        self.char_output_projection: Linear layer, called W_{dec} and b_{dec} in the PDF
-        ###        self.decoderCharEmb: Embedding matrix of character embeddings
-        ###        self.target_vocab: vocabulary for the target language
-        ###
-        ### Hint: - Use target_vocab.char2id to access the character vocabulary for the target language.
-        ###       - Set the padding_idx argument of the embedding matrix.
-        ###       - Create a new Embedding layer. Do not reuse embeddings created in Part 1 of this assignment.
-        
-
-        ### END YOUR CODE
-
-
+        super(CharDecoder, self).__init__()
+        self.target_vocab = target_vocab
+        self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size)
+        self.char_output_projection = nn.Linear(hidden_size, len(target_vocab.id2char))
+        self.decoderCharEmb = nn.Embedding(len(target_vocab.id2char), char_embedding_size) # TODO: , padding_idx=
     
     def forward(self, input, dec_hidden=None):
         """ Forward pass of character decoder.
@@ -38,11 +27,13 @@ class CharDecoder(nn.Module):
         @returns scores: called s in the PDF, shape (length, batch, self.vocab_size)
         @returns dec_hidden: internal state of the LSTM after reading the input characters. A tuple of two tensors of shape (1, batch, hidden_size)
         """
-        ### YOUR CODE HERE for part 2b
-        ### TODO - Implement the forward pass of the character decoder.
-        
-        
-        ### END YOUR CODE 
+        # 1 Lookup the character embeddings                                         # (len, BS)
+        input = self.decoderCharEmb(input)                                          # (len, embed, BS)
+        # 2 Pass to the LSTM the input embedding and decoder hidden state
+        hidden, (last_hidden, last_cell) = self.decoderCharEmb(input, dec_hidden)   # (len, hidden, BS), (hidden, BS)
+        # 3 Compute the scores
+        s = self.char_output_projection(hidden)                                     # (len, Vchar, BS)
+        return s, (last_hidden, last_cell)
 
 
     def train_forward(self, char_sequence, dec_hidden=None):
@@ -53,6 +44,7 @@ class CharDecoder(nn.Module):
 
         @returns The cross-entropy loss, computed as the *sum* of cross-entropy losses of all the words in the batch, for every character in the sequence.
         """
+        
         ### YOUR CODE HERE for part 2c
         ### TODO - Implement training forward pass.
         ###

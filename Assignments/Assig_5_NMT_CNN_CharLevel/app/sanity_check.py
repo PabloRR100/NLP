@@ -212,7 +212,7 @@ def main():
     """ Main func.
     """
     # args = docopt(__doc__)
-    args = {'1a': False, '1b': False, '1f': True}
+    args = {'1a': False, '1b': False, '1f': False, '2a': True}
 
 
     # Check Python & PyTorch Versions
