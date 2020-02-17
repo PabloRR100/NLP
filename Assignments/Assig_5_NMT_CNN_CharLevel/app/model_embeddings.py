@@ -7,12 +7,12 @@ from highway import Highway
 
 CNN_KERNEL = 5
 CHAR_EMBED = 50
+WORD_EMBED = 300
 
 class ModelEmbeddings(nn.Module):
     """
     Class that converts input words to their CNN-based embeddings.
     """
-
     def __init__(self, embed_size, vocab):
         """
         Init the Embedding layer for one language
@@ -22,9 +22,10 @@ class ModelEmbeddings(nn.Module):
         """
         super(ModelEmbeddings, self).__init__()
         self.vocab = vocab
-        self.embeddings = nn.Embedding(len(vocab.id2char), CHAR_EMBED)  #, padding_idx=pad_token_idx)
+        self.embed_size = embed_size
+        self.embeddings = nn.Embedding(len(vocab.id2char), CHAR_EMBED)
         self.cnn = CNN(in_channels=CHAR_EMBED, out_channels=embed_size, kernel_size=CNN_KERNEL)
-        self.highway = Highway()
+        self.highway = Highway(embed_size=embed_size)
         self.dropout = nn.Dropout(p=0.3)
 
     def forward(self, input):
@@ -37,18 +38,23 @@ class ModelEmbeddings(nn.Module):
             CNN-based embeddings for each word of the sentences in the batch
         """
         # Move the BS first
-        print('input: ', input.shape)                               # (sent_len, BS, max_word_len)
+        batch_size = list(input.shape)[1]
+        # print('input: ', input.shape)                               # (sent_len, BS, max_word_len)
         input = input.permute(1,0,2)                                # (BS, sent_len, max_word_len)
-        print('input: ', input.shape)
+        # print('input: ', input.shape)
         x_emb = self.embeddings(input)                              # (BS, sent_len, max_word_len, e_char)
-        print('x_emb: ', x_emb.shape)       
+        # print('x_emb: ', x_emb.shape)       
         x_reshaped = x_emb.permute(0,1,3,2)                         # (BS, sent_len embbed, max_word,  e_char)
-        # TODO: Understand why this doesn't alter the result
-        x_reshaped = x_reshaped.view(-1, *x_reshaped.shape[1:])     # (BS * sent_len, max_word, e_char)
-        print('x_reshaped: ', x_reshaped.shape)
-        x_conv = self.cnn(x_reshaped)                               # (BS, e_char)
-        print('x_conv: ', x_conv.shape)
-        x_high = self.highway(x_conv)                               # (BS, e_char)
-        print('x_high: ', x_high.shape)
+        # print('x_reshaped: ', x_reshaped.shape)
+        x_reshaped = x_reshaped.view(-1, *x_reshaped.shape[2:])     # (BS * sent_len, max_word, e_char)
+        # print('x_reshaped: ', x_reshaped.shape)
+        x_conv = self.cnn(x_reshaped)                               # (BS * sent_len, e_char, 1)
+        # print('x_conv: ', x_conv.shape)
+        x_conv = x_conv.squeeze()                                   # (BS * sent_len, e_char)
+        # print('x_conv: ', x_conv.shape)
+        x_high = self.highway(x_conv)                               # (BS * sent_len, e_char)
+        # print('x_high: ', x_high.shape)
+        x_high = x_high.view(-1, batch_size, x_high.shape[-1])     # (BS, e_char)
+        # print('x_high: ', x_high.shape)
         return self.dropout(x_high)
                                   

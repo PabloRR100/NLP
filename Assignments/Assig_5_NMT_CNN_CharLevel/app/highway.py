@@ -18,10 +18,10 @@ class Highway(nn.Module):
 
     def forward(self, x_conv):
         # print('x_conv_shape: ', x_conv.shape)
-        x_proj = nn.functional.relu(self.W_proj(x_conv))
+        x_proj = torch.relu(self.W_proj(x_conv))
         # print('x_proj: ', x_proj)
         # print('x_proj: ', x_proj.shape)
-        x_gate = nn.functional.sigmoid(self.W_gate(x_conv))
+        x_gate = torch.sigmoid(self.W_gate(x_conv))
         # print('x_gate: ', x_gate)
         # print('x_gate: ', x_gate.shape)
         x_highway = x_gate * x_proj + (1-x_gate)*x_conv
