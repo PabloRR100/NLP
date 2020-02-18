@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import torch.nn as nn
+
 from cnn import CNN
 from highway import Highway
 
