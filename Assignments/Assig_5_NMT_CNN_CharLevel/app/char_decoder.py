@@ -14,9 +14,10 @@ class CharDecoder(nn.Module):
         """
         super(CharDecoder, self).__init__()
         self.target_vocab = target_vocab
+        self.criterion = nn.CrossEntropyLoss(reduction='sum')
         self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size)
         self.char_output_projection = nn.Linear(hidden_size, len(target_vocab.id2char))
-        self.decoderCharEmb = nn.Embedding(len(target_vocab.id2char), char_embedding_size) # TODO: , padding_idx=
+        self.decoderCharEmb = nn.Embedding(len(target_vocab.id2char), char_embedding_size)  # TODO: , padding_idx=
     
     def forward(self, input, dec_hidden=None):
         """ Forward pass of character decoder.
@@ -29,8 +30,9 @@ class CharDecoder(nn.Module):
         """
         # 1 Lookup the character embeddings                                         # (len, BS)
         input = self.decoderCharEmb(input)                                          # (len, embed, BS)
+        input = input.permute(2,)
         # 2 Pass to the LSTM the input embedding and decoder hidden state
-        hidden, (last_hidden, last_cell) = self.decoderCharEmb(input, dec_hidden)   # (len, hidden, BS), (hidden, BS)
+        hidden, (last_hidden, last_cell) = self.charDecoder(input, dec_hidden)   # (len, hidden, BS), (hidden, BS)
         # 3 Compute the scores
         s = self.char_output_projection(hidden)                                     # (len, Vchar, BS)
         return s, (last_hidden, last_cell)
@@ -44,10 +46,11 @@ class CharDecoder(nn.Module):
 
         @returns The cross-entropy loss, computed as the *sum* of cross-entropy losses of all the words in the batch, for every character in the sequence.
         """
-        
-        ### YOUR CODE HERE for part 2c
-        ### TODO - Implement training forward pass.
-        ###
+        s, (h,c) = self.forward(char_sequence, dec_hidden)
+        target = self.decoderCharEmb(char_sequence)
+        print(target.shape)
+        loss = self.criterion(s, target)
+        return loss
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
 

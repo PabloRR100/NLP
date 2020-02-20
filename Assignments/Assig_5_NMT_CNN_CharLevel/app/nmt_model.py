@@ -34,12 +34,12 @@ class NMT(nn.Module):
         """
         super(NMT, self).__init__()
 
+        self.vocab = vocab
         self.model_embeddings_source = ModelEmbeddings(embed_size, vocab.src)
         self.model_embeddings_target = ModelEmbeddings(embed_size, vocab.tgt)
 
         self.hidden_size = hidden_size
         self.dropout_rate = dropout_rate
-        self.vocab = vocab
 
         self.encoder = nn.LSTM(embed_size, hidden_size, bidirectional=True)
         self.decoder = nn.LSTMCell(embed_size + hidden_size, hidden_size)
@@ -73,11 +73,11 @@ class NMT(nn.Module):
         # Convert list of lists into tensors
         target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)
         source_padded_chars = self.vocab.src.to_input_tensor_char(source, device=self.device)
-        target_padded_chars = self.vocab.tgt.to_input_tensor(target, device=self.device)
+        target_padded_chars = self.vocab.tgt.to_input_tensor_char(target, device=self.device)
 
         enc_hiddens, dec_init_state = self.encode(source_padded_chars, source_lengths)
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
-        combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
+        combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded_chars)
         ## A4 code
         # source_padded = self.vocab.src.to_input_tensor(source, device=self.device)   # Tensor: (src_len, b)
         # target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)   # Tensor: (tgt_len, b)

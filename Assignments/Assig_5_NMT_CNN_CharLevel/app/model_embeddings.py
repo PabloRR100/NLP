@@ -24,7 +24,7 @@ class ModelEmbeddings(nn.Module):
         super(ModelEmbeddings, self).__init__()
         self.vocab = vocab
         self.embed_size = embed_size
-        self.embeddings = nn.Embedding(len(vocab.id2char), CHAR_EMBED)
+        self.embeddings = nn.Embedding(len(vocab.id2char), CHAR_EMBED, padding_idx=vocab['<pad>'])
         self.cnn = CNN(in_channels=CHAR_EMBED, out_channels=embed_size, kernel_size=CNN_KERNEL)
         self.highway = Highway(embed_size=embed_size)
         self.dropout = nn.Dropout(p=0.3)
@@ -40,7 +40,7 @@ class ModelEmbeddings(nn.Module):
         """
         # Move the BS first
         batch_size = list(input.shape)[1]
-        # print('input: ', input.shape)                               # (sent_len, BS, max_word_len)
+        # print('input: ', input.shape)                             # (sent_len, BS, max_word_len)
         input = input.permute(1,0,2)                                # (BS, sent_len, max_word_len)
         # print('input: ', input.shape)
         x_emb = self.embeddings(input)                              # (BS, sent_len, max_word_len, e_char)

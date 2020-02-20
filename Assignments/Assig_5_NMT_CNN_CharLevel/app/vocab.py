@@ -144,7 +144,7 @@ class VocabEntry(object):
         """
         charIdx = self.words2charindices(sents)
         paddedCharIdx = pad_sents_char(charIdx)
-        input_tensor = torch.Tensor(paddedCharIdx, device=device).permute(1,0,2)
+        input_tensor = torch.LongTensor(paddedCharIdx, device=device).permute(1,0,2) # LongTensor because contians ints
         return input_tensor
 
     def to_input_tensor(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
