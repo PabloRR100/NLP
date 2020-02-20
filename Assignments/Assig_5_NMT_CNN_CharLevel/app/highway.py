@@ -29,6 +29,7 @@ class Highway(nn.Module):
         return x_highway
 
 if __name__ == '__main__':
+
     batch_size = 2
     embed_size = 3
     W_proj = np.array([[0.5 for _ in range(embed_size)] for _ in range(embed_size)])
@@ -53,4 +54,3 @@ if __name__ == '__main__':
     net.W_gate.weight = nn.Parameter(torch.Tensor(W_gate))
     x = torch.Tensor(input_x)
     net(x)
-
