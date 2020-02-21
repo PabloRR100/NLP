@@ -40,22 +40,23 @@ class ModelEmbeddings(nn.Module):
         """
         # Move the BS first
         batch_size = list(input.shape)[1]
-        print('input: ', input.shape)                             # (sent_len, BS, max_word_len)
+        # print('input: ', input.shape)                               # (sent_len, BS, max_word_len)
         input = input.permute(1,0,2)                                # (BS, sent_len, max_word_len)
-        print('input: ', input.shape)
-        x_emb = self.embeddings(input)                              # (BS, sent_len, max_word_len, e_char)
-        print('x_emb: ', x_emb.shape)       
-        x_reshaped = x_emb.permute(0,1,3,2)                         # (BS, sent_len embbed, e_char, max_word)
-        print('x_reshaped: ', x_reshaped.shape)
-        x_reshaped = x_reshaped.view(-1, *x_reshaped.shape[2:])     # (BS * sent_len, e_char, max_word)
-        print('x_reshaped: ', x_reshaped.shape)
+        # print('input: ', input.shape)
+        input = input.reshape(-1, input.shape[-1])                  # (BS * sent_len, max_word)
+        # print('input: ', input.shape)
+        x_emb = self.embeddings(input)                              # (BS * sent_len, max_word_len, e_char)
+        # print('x_emb: ', x_emb.shape)       
+        x_reshaped = x_emb.permute(0,2,1)                         # (BS * sent_len embbed, e_char, max_word)
+        # print('x_reshaped: ', x_reshaped.shape)
         x_conv = self.cnn(x_reshaped)                               # (BS * sent_len, e_char, 1)
-        print('x_conv: ', x_conv.shape)
+        # print('x_conv: ', x_conv.shape)
         x_conv = x_conv.squeeze()                                   # (BS * sent_len, e_char)
-        print('x_conv: ', x_conv.shape)
+        # print('x_conv: ', x_conv.shape)
         x_high = self.highway(x_conv)                               # (BS * sent_len, e_char)
-        print('x_high: ', x_high.shape)
+        # print('x_high: ', x_high.shape)
         x_high = x_high.view(-1, batch_size, x_high.shape[-1])     # (BS, e_char)
-        print('x_high: ', x_high.shape)
+        # print('x_high: ', x_high.shape)
         return self.dropout(x_high)
-                                  
+
+
