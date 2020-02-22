@@ -13,5 +13,4 @@ class CNN(nn.Module):
         # self.pool = nn.AdaptiveMaxPool1d(output_size=1)
 
     def forward(self, x):
-        x,_ = torch.max(self.conv(x), dim=2)
-        return F.relu(x)
+        return torch.max(F.relu(self.conv(x)), dim=2)[0]

@@ -314,10 +314,45 @@ def beam_search(model: NMT, test_data_src: List[List[str]], beam_size: int, max_
 
 
 def main():
-    """ Main func.
+    """ 
+    Main func
     """
     args = docopt(__doc__)
-
+    # args =  {
+    #     '--batch-size': '2',
+    #     '--beam-size': '5',
+    #     '--clip-grad': '5.0',
+    #     '--cuda': False,
+    #     '--dev-src': './en_es_data/dev_tiny.es',
+    #     '--dev-tgt': './en_es_data/dev_tiny.en',
+    #     '--dropout': '0.3',
+    #     '--embed-size': '256',
+    #     '--help': False,
+    #     '--hidden-size': '256',
+    #     '--input-feed': False,
+    #     '--log-every': '10',
+    #     '--lr': '0.001',
+    #     '--lr-decay': '0.5',
+    #     '--max-decoding-time-step': '70',
+    #     '--max-epoch': '201',
+    #     '--max-num-trial': '5',
+    #     '--no-char-decoder': False,
+    #     '--patience': '5',
+    #     '--sample-size': '5',
+    #     '--save-to': 'model.bin',
+    #     '--seed': '0',
+    #     '--train-src': './en_es_data/train_tiny.es',
+    #     '--train-tgt': './en_es_data/train_tiny.en',
+    #     '--uniform-init': '0.1',
+    #     '--valid-niter': '100',
+    #     '--vocab': 'vocab_tiny_q2.json',
+    #     'MODEL_PATH': None,
+    #     'OUTPUT_FILE': None,
+    #     'TEST_SOURCE_FILE': None,
+    #     'TEST_TARGET_FILE': None,
+    #     'decode': False,
+    #     'train': True}
+        
     # Check pytorch version
     assert(torch.__version__ >= "1.0.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(torch.__version__)
 
