@@ -71,33 +71,18 @@ class NMT(nn.Module):
         source_lengths = [len(s) for s in source]
 
         # Convert list of lists into tensors
-        target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)
-        source_padded_chars = self.vocab.src.to_input_tensor_char(source, device=self.device)
-        target_padded_chars = self.vocab.tgt.to_input_tensor_char(target, device=self.device)
+        target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)                      # (BS, sent_len)
+        source_padded_chars = self.vocab.src.to_input_tensor_char(source, device=self.device)           # (BS, sent_len, word_len)
+        target_padded_chars = self.vocab.tgt.to_input_tensor_char(target, device=self.device)           # (BS, sent_len, word_len)
 
-        enc_hiddens, dec_init_state = self.encode(source_padded_chars, source_lengths)
-        enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
-        combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded_chars)
-        ## A4 code
-        # source_padded = self.vocab.src.to_input_tensor(source, device=self.device)   # Tensor: (src_len, b)
-        # target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)   # Tensor: (tgt_len, b)
- 
-        # enc_hiddens, dec_init_state = self.encode(source_padded, source_lengths)
-        # enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
-        # combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
-        ## End A4 code
-        
-        ### YOUR CODE HERE for part 1g
-        ### TODO: 
-        ###     Modify the code lines above as needed to fetch the character-level tensor 
-        ###     to feed into encode() and decode(). You should:
-        ###     - Keep `target_padded` from A4 code above for predictions
-        ###     - Add `source_padded_chars` for character level padded encodings for source
-        ###     - Add `target_padded_chars` for character level padded encodings for target
-        ###     - Modify calls to encode() and decode() to use the character level encodings
+        # Run the encoder to produce the hiddent states  
+        enc_hiddens, dec_init_state = self.encode(source_padded_chars, source_lengths)                  # (sent_len, BS, 2*h)
+        enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)                               # (sent_len, BS)
 
-        ### END YOUR CODE
+        # Run the decoder to compute the prediction
+        combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded_chars)     # (tgt_sent_len, BS, h)
 
+        # Calculate the probabilities out of the decoder outputs
         P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
 
         # Zero out, probabilities for which we have nothing in the target text
@@ -107,14 +92,16 @@ class NMT(nn.Module):
         target_gold_words_log_prob = torch.gather(P, index=target_padded[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:]
         scores = target_gold_words_log_prob.sum() # mhahn2 Small modification from A4 code.
 
-
-
         if self.charDecoder is not None:
-            max_word_len = target_padded_chars.shape[-1]
+            
+            max_word_len = target_padded_chars.shape[-1]    
 
-            target_words = target_padded[1:].contiguous().view(-1)
-            target_chars = target_padded_chars[1:].view(-1, max_word_len)
-            target_outputs = combined_outputs.view(-1, 256)
+            # target_words = target_padded[1:].contiguous().view(-1)          # (BS, sent_len)
+            # print('target_words: ', target_words.shape)
+            target_chars = target_padded_chars[1:].view(-1, max_word_len)   # (BS * sent_len, word_len)     # TODO: change to target_padded_chars[1:].reshape(-1, max_word_len)
+            print('target_chars: ', target_chars.shape)
+            target_outputs = combined_outputs.view(-1, 256)                 # ()
+            print('target_outputs: ', target_outputs.shape)             
     
             target_chars_oov = target_chars #torch.index_select(target_chars, dim=0, index=oovIndices)
             rnn_states_oov = target_outputs #torch.index_select(target_outputs, dim=0, index=oovIndices)
@@ -137,16 +124,22 @@ class NMT(nn.Module):
                                                 hidden state and cell.
         """
         enc_hiddens, dec_init_state = None, None
-
-        X = self.model_embeddings_source(source_padded)
-        X_packed = pack_padded_sequence(X, source_lengths)
-        enc_hiddens, (last_hidden, last_cell) = self.encoder(X_packed)
+        print('ENCODER')
+        print('-------')
+        print('Input :', source_padded.shape)
+        X = self.model_embeddings_source(source_padded)                     # (sent_len, BS, word_len)
+        print('X_emb: ', x.shape)
+        X_packed = pack_padded_sequence(X, source_lengths)                  # (sent_len ??)
+        print('X_packed: ', X_packed.shape)
+        enc_hiddens, (last_hidden, last_cell) = self.encoder(X_packed)      # (sent_len, BS, 2*h)
+        print('Enc_hid: ', enc_hiddens.shape)
         (enc_hiddens, _) = pad_packed_sequence(enc_hiddens)
-        enc_hiddens = enc_hiddens.permute(1, 0, 2)
+        enc_hiddens = enc_hiddens.permute(1, 0, 2)                          # (BS, sent_lent, 2*h)
+        print('Enc_hid: ', enc_hiddens.shape)                               
 
         init_decoder_hidden = self.h_projection(torch.cat((last_hidden[0], last_hidden[1]), dim=1))
         init_decoder_cell = self.c_projection(torch.cat((last_cell[0], last_cell[1]), dim=1))
-        dec_init_state = (init_decoder_hidden, init_decoder_cell)
+        dec_init_state = (init_decoder_hidden, init_decoder_cell)           
 
         return enc_hiddens, dec_init_state
 

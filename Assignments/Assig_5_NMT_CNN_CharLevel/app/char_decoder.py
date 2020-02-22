@@ -3,6 +3,7 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class CharDecoder(nn.Module):
     def __init__(self, hidden_size, char_embedding_size=50, target_vocab=None):
@@ -17,10 +18,10 @@ class CharDecoder(nn.Module):
         self.criterion = nn.CrossEntropyLoss(reduction='sum')
         self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size)
         self.char_output_projection = nn.Linear(hidden_size, len(target_vocab.id2char))
-        self.decoderCharEmb = nn.Embedding(len(target_vocab.id2char), char_embedding_size)  # TODO: , padding_idx=
+        self.decoderCharEmb = nn.Embedding(len(target_vocab.id2char), char_embedding_size, padding_idx=target_vocab.char2id['<pad>']) # padding_idx=target_vocab['<pad>'])
     
     def forward(self, input, dec_hidden=None):
-        """ Forward pass of character decoder.
+        """ Forward pass of character decoder.                       **** (length = sent_len * BS)   ||   batch = v) ****
 
         @param input: tensor of integers, shape (length, batch)
         @param dec_hidden: internal state of the LSTM before reading the input characters. A tuple of two tensors of shape (1, batch, hidden_size)
@@ -28,34 +29,40 @@ class CharDecoder(nn.Module):
         @returns scores: called s in the PDF, shape (length, batch, self.vocab_size)
         @returns dec_hidden: internal state of the LSTM after reading the input characters. A tuple of two tensors of shape (1, batch, hidden_size)
         """
-        # 1 Lookup the character embeddings                                         # (len, BS)
-        input = self.decoderCharEmb(input)                                          # (len, embed, BS)
-        input = input.permute(2,)
+        # 1 Lookup the character embeddings                                         # (sent_len * BS, word_len)
+        print('Input: ', input.shape)
+        X = self.decoderCharEmb(input)                                              # (sent_len * BS, word_len, char_emb)
+        print('Input embedded: ', X.shape)
         # 2 Pass to the LSTM the input embedding and decoder hidden state
-        hidden, (last_hidden, last_cell) = self.charDecoder(input, dec_hidden)   # (len, hidden, BS), (hidden, BS)
+        hidden, (last_hidden, last_cell) = self.charDecoder(X, dec_hidden)          # (sent_len * BS, word_len, hidden), (1, word_len, hidden)
+        print('Hidden encoded: ', hidden.shape)
         # 3 Compute the scores
-        s = self.char_output_projection(hidden)                                     # (len, Vchar, BS)
+        s = self.char_output_projection(hidden)                                     # (sent_len * BS, word_len, Vchar)
+        print('Scores: ', s.shape)
         return s, (last_hidden, last_cell)
 
 
     def train_forward(self, char_sequence, dec_hidden=None):
-        """ Forward computation during training.
+        """ Forward computation during training.                      **** (length = max_word_len)   ||   batch = number of words) ****
 
         @param char_sequence: tensor of integers, shape (length, batch). Note that "length" here and in forward() need not be the same.
         @param dec_hidden: initial internal state of the LSTM, obtained from the output of the word-level decoder. A tuple of two tensors of shape (1, batch, hidden_size)
 
         @returns The cross-entropy loss, computed as the *sum* of cross-entropy losses of all the words in the batch, for every character in the sequence.
         """
-        s, (h,c) = self.forward(char_sequence, dec_hidden)
-        target = self.decoderCharEmb(char_sequence)
-        print(target.shape)
-        loss = self.criterion(s, target)
-        return loss
+        
+        # Zero out, probabilities for which we have nothing in the target char
+        masks = (char_sequence != self.target_vocab.char2id['<pad>']).float()
+
+        # Forward pass the char_sequence
+        scores, _ = self.forward(char_sequence[:-1], dec_hidden)            # (sent_len * BS, word_len, V_char), (sent_len * BS, word_len, hidden)
+
+        # Cross-Entropy Loss
+        P = F.log_softmax(scores, dim=-1)
+        chars_log_prob = torch.gather(P, index=char_sequence[1:].unsqueeze(-1), dim=-1).squeeze(-1) * masks[1:]
+        return chars_log_prob.sum()
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
-
-
-        ### END YOUR CODE
 
     def decode_greedy(self, initialStates, device, max_length=21):
         """ Greedy decoding

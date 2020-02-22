@@ -8,7 +8,7 @@ from highway import Highway
 
 CNN_KERNEL = 5
 CHAR_EMBED = 50
-WORD_EMBED = 300
+# WORD_EMBED = 300
 
 class ModelEmbeddings(nn.Module):
     """
