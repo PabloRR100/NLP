@@ -15,12 +15,12 @@ class CharDecoder(nn.Module):
         """
         super(CharDecoder, self).__init__()
         self.target_vocab = target_vocab
-        self.criterion = nn.CrossEntropyLoss(reduction='sum')
+        self.criterion = nn.CrossEntropyLoss(ignore_index=target_vocab.char2id['<pad>'], reduction='sum')
         self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size)
         self.char_output_projection = nn.Linear(hidden_size, len(target_vocab.id2char))
         self.decoderCharEmb = nn.Embedding(len(target_vocab.id2char), char_embedding_size, padding_idx=target_vocab.char2id['<pad>']) # padding_idx=target_vocab['<pad>'])
     
-    def forward(self, input, dec_hidden=None):
+    def forward(self, input, dec_hidden=None, verbose=0):
         """ Forward pass of character decoder.                       **** (length = sent_len * BS)   ||   batch = v) ****
 
         @param input: tensor of integers, shape (length, batch)
@@ -30,15 +30,15 @@ class CharDecoder(nn.Module):
         @returns dec_hidden: internal state of the LSTM after reading the input characters. A tuple of two tensors of shape (1, batch, hidden_size)
         """
         # 1 Lookup the character embeddings                                         # (sent_len * BS, word_len)
-        print('Input: ', input.shape)
+        if verbose == 1: print('Input: ', input.shape)
         X = self.decoderCharEmb(input)                                              # (sent_len * BS, word_len, char_emb)
-        print('Input embedded: ', X.shape)
+        if verbose == 1: print('Input embedded: ', X.shape)
         # 2 Pass to the LSTM the input embedding and decoder hidden state
         hidden, (last_hidden, last_cell) = self.charDecoder(X, dec_hidden)          # (sent_len * BS, word_len, hidden), (1, word_len, hidden)
-        print('Hidden encoded: ', hidden.shape)
+        if verbose == 1: print('Hidden encoded: ', hidden.shape)
         # 3 Compute the scores
         s = self.char_output_projection(hidden)                                     # (sent_len * BS, word_len, Vchar)
-        print('Scores: ', s.shape)
+        if verbose == 1: print('Scores: ', s.shape)
         return s, (last_hidden, last_cell)
 
 
@@ -50,21 +50,22 @@ class CharDecoder(nn.Module):
 
         @returns The cross-entropy loss, computed as the *sum* of cross-entropy losses of all the words in the batch, for every character in the sequence.
         """
-        
-        # Zero out, probabilities for which we have nothing in the target char
-        masks = (char_sequence != self.target_vocab.char2id['<pad>']).float()
+        target = char_sequence[1:].contiguous().view(-1)
+        print('char_sequence: ', char_sequence)
+        print('target: ', target)
 
         # Forward pass the char_sequence
         scores, _ = self.forward(char_sequence[:-1], dec_hidden)            # (sent_len * BS, word_len, V_char), (sent_len * BS, word_len, hidden)
 
         # Cross-Entropy Loss
-        P = F.log_softmax(scores, dim=-1)
-        chars_log_prob = torch.gather(P, index=char_sequence[1:].unsqueeze(-1), dim=-1).squeeze(-1) * masks[1:]
-        return chars_log_prob.sum()
+        scores = scores.view(-1, len(self.target_vocab.char2id))
+        print('scores view :', scores.shape)
+        loss = self.criterion(scores, target)
+        return loss
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
 
-    def decode_greedy(self, initialStates, device, max_length=21):
+    def decode_greedy(self, initialStates, device, max_length=21, verbose=0):
         """ Greedy decoding
         @param initialStates: initial internal state of the LSTM, a tuple of two tensors of size (1, batch, hidden_size)
         @param device: torch.device (indicates whether the model is on CPU or GPU)
@@ -73,15 +74,66 @@ class CharDecoder(nn.Module):
         @returns decodedWords: a list (of length batch) of strings, each of which has length <= max_length.
                               The decoded strings should NOT contain the start-of-word and end-of-word characters.
         """
+        BS = initialStates[0].shape[1]
+        if verbose == 1: print('Batch size = ', BS)
+        
+        output_word = []
+        decoded_words = ['{'] * BS
+        current_char = [self.target_vocab.char2id['{']] * BS                                    # ()
 
-        ### YOUR CODE HERE for part 2d
-        ### TODO - Implement greedy decoding.
-        ### Hints:
+        if verbose == 1: print('Current char [0]: {} :: {}'.format(current_char[0], self.target_vocab.id2char[current_char[0]]))
+        current_char_tensor = torch.tensor(current_char, device=device)                         # (BS, )
+    
+        h_prev, c_prev = initialStates                                                          # ()
+
+        # Up to max word leght predicted one csharacter:
+        for j,t in enumerate(range(max_length)):
+            
+            # Forward pass the char decoder LSTM
+            if j == 0 and verbose == 1: print('Current char tensor: ', current_char_tensor.shape)
+            if j == 0 and verbose == 1: print('Current char tensor unsqueezed shape: ', current_char_tensor.unsqueeze(0).shape)   # ()
+            _, (h_t,c_t) = self.forward(current_char_tensor.unsqueeze(0), (h_prev, c_prev))     # ()
+            
+            # Compute Scores
+            if j == 0 and verbose == 1: print('Hidden shape: ', h_t.shape)                    # ()
+            if j == 0 and verbose == 1: print('Hidden squeezed shape: ', h_t.squeeze(0).shape)                    # ()
+            scores = self.char_output_projection(h_t.squeeze(0))                                # ()
+            if j == 0 and verbose == 1: print('scores: ', scores)
+            if j == 0 and verbose == 1: print('scores shape: ', scores.shape)
+            
+            # Compute Probabilities
+            P = F.log_softmax(scores, dim=1)                                                    # ()
+            if j == 0 and verbose == 1: print('probabilities: ', P)
+            if j == 0 and verbose == 1: print('probabilities shape: ', P.shape)
+            
+            # Compute predicted character  
+            current_char_tensor = torch.argmax(P, dim=1)                                               # ()
+            if j == 0 and verbose == 1: print('predicted_char: ', current_char_tensor)
+            if j == 0 and verbose == 1: print('predicted_char shape: ', current_char_tensor.shape)
+            
+            # For batches we don't stop in <END> token
+            # Update every predicted output with its prediction
+            for i in range(BS):
+                decoded_words[i] += self.target_vocab.id2char[current_char_tensor[i].item()]
+            
+            # Update hidden states
+            h_prev, c_prev = h_t, c_t
+
+        if verbose == 1: print('Decoded words: ', decoded_words)
+        for i in range(BS):
+            # Remove start token
+            decoded_words[i] = decoded_words[i][1:]
+            # Truncate from where <END> was predicted
+            decoded_words[i] = decoded_words[i].partition('}')[0]
+
+        return decoded_words
+
+
+
+
+
+
         ###      - Use target_vocab.char2id and target_vocab.id2char to convert between integers and characters
         ###      - Use torch.tensor(..., device=device) to turn a list of character indices into a tensor.
         ###      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
         ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
-        
-        
-        ### END YOUR CODE
-
