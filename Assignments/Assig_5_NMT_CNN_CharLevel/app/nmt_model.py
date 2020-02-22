@@ -56,7 +56,7 @@ class NMT(nn.Module):
         else:
            self.charDecoder = None
 
-    def forward(self, source: List[List[str]], target: List[List[str]]) -> torch.Tensor:
+    def forward(self, source: List[List[str]], target: List[List[str]], verbose=0) -> torch.Tensor:
         """ Take a mini-batch of source and target sentences, compute the log-likelihood of
         target sentences under the language models learned by the NMT system.
 
@@ -96,12 +96,12 @@ class NMT(nn.Module):
             
             max_word_len = target_padded_chars.shape[-1]    
 
-            # target_words = target_padded[1:].contiguous().view(-1)          # (BS, sent_len)
+            # target_words = target_padded[1:].contiguous().view(-1)                        # (BS, sent_len)
             # print('target_words: ', target_words.shape)
-            target_chars = target_padded_chars[1:].view(-1, max_word_len)   # (BS * sent_len, word_len)     # TODO: change to target_padded_chars[1:].reshape(-1, max_word_len)
-            print('target_chars: ', target_chars.shape)
-            target_outputs = combined_outputs.view(-1, 256)                 # ()
-            print('target_outputs: ', target_outputs.shape)             
+            target_chars = target_padded_chars[1:].contiguous().view(-1, max_word_len)      # (BS * sent_len, word_len)     # TODO: change to target_padded_chars[1:].reshape(-1, max_word_len)
+            if verbose == 1: print('target_chars: ', target_chars.shape)
+            target_outputs = combined_outputs.view(-1, 256)                                 # ()
+            if verbose == 1: print('target_outputs: ', target_outputs.shape)             
     
             target_chars_oov = target_chars #torch.index_select(target_chars, dim=0, index=oovIndices)
             rnn_states_oov = target_outputs #torch.index_select(target_outputs, dim=0, index=oovIndices)
@@ -111,7 +111,7 @@ class NMT(nn.Module):
         return scores
 
 
-    def encode(self, source_padded: torch.Tensor, source_lengths: List[int]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    def encode(self, source_padded: torch.Tensor, source_lengths: List[int], verbose=0) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """ Apply the encoder to source sentences to obtain encoder hidden states.
             Additionally, take the final states of the encoder and project them to obtain initial states for decoder.
         @param source_padded (Tensor): Tensor of padded source sentences with shape (src_len, b, max_word_length), where
@@ -124,18 +124,18 @@ class NMT(nn.Module):
                                                 hidden state and cell.
         """
         enc_hiddens, dec_init_state = None, None
-        print('ENCODER')
-        print('-------')
-        print('Input :', source_padded.shape)
+        if verbose == 1: print('ENCODER')
+        if verbose == 1: print('-------')
+        if verbose == 1: print('Input :', source_padded.shape)
         X = self.model_embeddings_source(source_padded)                     # (sent_len, BS, word_len)
-        print('X_emb: ', X.shape)
+        if verbose == 1: print('X_emb: ', X.shape)
         X_packed = pack_padded_sequence(X, source_lengths)                  # (sent_len * BS, word_len)
-        print('X_packed: ', X_packed.data.shape)
+        if verbose == 1: print('X_packed: ', X_packed.data.shape)
         enc_hiddens, (last_hidden, last_cell) = self.encoder(X_packed)      # (sent_len, BS, 2*h)
-        print('Enc_hid: ', enc_hiddens.data.shape)
+        if verbose == 1: print('Enc_hid: ', enc_hiddens.data.shape)
         (enc_hiddens, _) = pad_packed_sequence(enc_hiddens)
         enc_hiddens = enc_hiddens.permute(1, 0, 2)                          # (BS, sent_lent, 2*h)
-        print('Enc_hid: ', enc_hiddens.shape)                               
+        if verbose == 1: print('Enc_hid: ', enc_hiddens.shape)                               
 
         init_decoder_hidden = self.h_projection(torch.cat((last_hidden[0], last_hidden[1]), dim=1))
         init_decoder_cell = self.c_projection(torch.cat((last_cell[0], last_cell[1]), dim=1))

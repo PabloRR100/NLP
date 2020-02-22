@@ -42,7 +42,7 @@ class CharDecoder(nn.Module):
         return s, (last_hidden, last_cell)
 
 
-    def train_forward(self, char_sequence, dec_hidden=None):
+    def train_forward(self, char_sequence, dec_hidden=None, verbose=0):
         """ Forward computation during training.                      **** (length = max_word_len)   ||   batch = number of words) ****
 
         @param char_sequence: tensor of integers, shape (length, batch). Note that "length" here and in forward() need not be the same.
@@ -51,15 +51,15 @@ class CharDecoder(nn.Module):
         @returns The cross-entropy loss, computed as the *sum* of cross-entropy losses of all the words in the batch, for every character in the sequence.
         """
         target = char_sequence[1:].contiguous().view(-1)
-        print('char_sequence: ', char_sequence)
-        print('target: ', target)
+        if verbose == 1: print('char_sequence: ', char_sequence)
+        if verbose == 1: print('target: ', target)
 
         # Forward pass the char_sequence
         scores, _ = self.forward(char_sequence[:-1], dec_hidden)            # (sent_len * BS, word_len, V_char), (sent_len * BS, word_len, hidden)
 
         # Cross-Entropy Loss
         scores = scores.view(-1, len(self.target_vocab.char2id))
-        print('scores view :', scores.shape)
+        if verbose == 1: print('scores view :', scores.shape)
         loss = self.criterion(scores, target)
         return loss
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
