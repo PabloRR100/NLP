@@ -30,7 +30,7 @@ class Highway(nn.Module):
         if VERBOSE: print('x_gate: ', x_gate)
         if VERBOSE: print('x_gate: ', x_gate.shape)
         
-        x_highway = x_gate * x_proj + (1-x_gate)
+        x_highway = x_gate * x_proj + (1-x_gate) * x_conv
         if VERBOSE: print('x_highway: ', x_highway.shape)
         return x_highway
 
