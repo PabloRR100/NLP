@@ -143,9 +143,8 @@ class VocabEntry(object):
         @returns sents_var: tensor of (max_sentence_length, batch_size, max_word_length)
         """
         charIdx = self.words2charindices(sents)
-        paddedCharIdx = pad_sents_char(charIdx)
-        input_tensor = torch.LongTensor(paddedCharIdx, device=device).permute(1,0,2) # LongTensor because contians ints
-        return input_tensor
+        paddedCharIdx = pad_sents_char(charIdx, self.char2id['<pad>'])
+        return torch.tensor(paddedCharIdx, device=device).permute(1,0,2) # TODO: LongTensor because contians ints?
 
     def to_input_tensor(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
         """ Convert list of sentences (words) into tensor with necessary padding for 
