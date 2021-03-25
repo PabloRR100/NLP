@@ -6,7 +6,7 @@ Flask==1.1.1
 
 dask==2.9.0
 tqdm==4.36.1
-PyYAML==5.1.2
+PyYAML==5.4
 numpy==1.18.1
 pandas==0.25.1
 pandarallel==1.4.2
